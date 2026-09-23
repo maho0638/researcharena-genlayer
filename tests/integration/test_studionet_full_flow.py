@@ -36,7 +36,7 @@ def test_research_arena_live_flow(default_account, accounts):
             "Which submitted report most directly and authoritatively establishes that example.com is reserved for documentation examples?",
             "Prefer primary sources that explicitly name example.com, independent corroboration, and standards-track evidence. Penalize generic homepages or evidence that does not directly support the claim.",
             4000000000,
-            3,
+            2,
         ]
     ).transact(
         value=reward,
@@ -102,6 +102,13 @@ def test_research_arena_live_flow(default_account, accounts):
     assert str(_field(result, "status")) == "RESOLVED"
     assert str(_field(result, "winner_submission_id")) == "primary-report"
     assert int(_field(result, "winning_score")) >= 70
+    assert str(_field(result, "reason_code")) in {
+        "DIRECTNESS",
+        "SOURCE_AUTHORITY",
+        "INDEPENDENT_CORROBORATION",
+        "RUBRIC_FIT",
+        "EVIDENCE_CONSISTENCY",
+    }
 
     claim_tx = researcher_a_contract.claim_reward(args=[bounty_id]).transact(
         wait_interval=10000,

@@ -34,6 +34,19 @@ const explorerBase = "https://explorer-studio.genlayer.com";
 const verifiedDemo = {
   bountyId: "example-domain-research-v1",
   workflow: "https://github.com/maho0638/researcharena-genlayer/actions/runs/35912412402",
+  expected: {
+    id: "example-domain-research-v1",
+    question: "Which submitted report most directly and authoritatively establishes that example.com is reserved for documentation examples?",
+    status: "RESOLVED",
+    max_submissions: 2,
+    submission_count: 2,
+    winner_submission_id: "primary-report",
+    winning_score: 95,
+    runner_up_score: 20,
+    reason_code: "RUBRIC_FIT",
+    reward_claimed: true,
+    rationale: "primary-report won because the report best satisfied the sponsor's precommitted rubric. Score 95/100 vs 20/100.",
+  } satisfies BountyView,
   transactions: [
     ["Create escrow", "0xad4b1139b373a2a56981dcf34455e6da52ecebfa1934054ab7cb3141c9d8d5d5"],
     ["Submit primary", "0xbe796ea1d7d3187b3b905897e682edbd4ccd346c5c4a784add109e400484226c"],
@@ -96,6 +109,9 @@ export default function Home() {
 
   const [inspectId, setInspectId] = useState("example-domain-research-v1");
   const [bounty, setBounty] = useState<BountyView | null>(null);
+  const [verifiedBounty, setVerifiedBounty] = useState<BountyView | null>(null);
+  const [verifiedProofState, setVerifiedProofState] = useState<"loading" | "live" | "error">("loading");
+  const [marketState, setMarketState] = useState<"loading" | "live" | "error">("loading");
   const [marketBounties, setMarketBounties] = useState<BountyView[]>([]);
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [lastTx, setLastTx] = useState("");
@@ -110,6 +126,7 @@ export default function Home() {
 
   useEffect(() => {
     if (deployed) {
+      void loadVerifiedBounty();
       void loadBounty(verifiedDemo.bountyId);
       void loadMarket();
     }
@@ -290,8 +307,27 @@ export default function Home() {
     }
   }
 
+  async function loadVerifiedBounty() {
+    if (!deployed) return;
+    setVerifiedProofState("loading");
+    try {
+      const client: any = readClient();
+      const data: any = await client.readContract({
+        address: CONTRACT_ADDRESS,
+        functionName: "get_bounty",
+        args: [verifiedDemo.bountyId],
+      });
+      setVerifiedBounty(data);
+      setVerifiedProofState("live");
+    } catch {
+      setVerifiedBounty(null);
+      setVerifiedProofState("error");
+    }
+  }
+
   async function loadMarket() {
     if (!deployed) return;
+    setMarketState("loading");
     try {
       const client: any = readClient();
       const countRaw: any = await client.readContract({
@@ -318,8 +354,10 @@ export default function Home() {
       }
 
       setMarketBounties(loaded.reverse());
+      setMarketState("live");
     } catch {
       setMarketBounties([]);
+      setMarketState("error");
     }
   }
 
@@ -359,6 +397,31 @@ export default function Home() {
       setSubmissions([]);
     }
   }
+
+  const canonicalBounty =
+    verifiedBounty || (verifiedProofState === "error" ? verifiedDemo.expected : null);
+  const entryCount = Number(bounty?.submission_count ?? 0);
+  const entryCap = Number(bounty?.max_submissions ?? 0);
+  const deadline = Number(bounty?.deadline ?? 0);
+  const deadlinePassed = deadline > 0 && Math.floor(Date.now() / 1000) > deadline;
+  const closeAllowed = Boolean(
+    bounty?.status === "OPEN" &&
+    entryCount >= 2 &&
+    (entryCount >= entryCap || deadlinePassed)
+  );
+  const resolveAllowed = Boolean(
+    bounty &&
+    entryCount >= 2 &&
+    (bounty.status === "CLOSED" || (bounty.status === "OPEN" && deadlinePassed))
+  );
+  const claimAllowed = Boolean(
+    bounty?.status === "RESOLVED" && bounty?.winner_submission_id && !bounty?.reward_claimed
+  );
+  const refundAllowed = Boolean(
+    bounty?.status === "OPEN" &&
+    entryCount < 2 &&
+    (entryCount === 0 || deadlinePassed)
+  );
 
   return (
     <main>
@@ -404,7 +467,7 @@ export default function Home() {
           </div>
           <div className="heroTrust">
             <span>✓ Escrow before competition</span>
-            <span>✓ Independent evidence domains</span>
+            <span>✓ Distinct evidence hostnames</span>
             <span>✓ Validator re-execution</span>
           </div>
         </div>
@@ -462,7 +525,7 @@ export default function Home() {
         </article>
         <article>
           <span className="signalIcon">⌁</span>
-          <div><b>Independent evidence</b><p>Each entry carries public sources from separate domains.</p></div>
+          <div><b>Independent evidence</b><p>Each entry carries public sources from distinct hostnames for cross-checking.</p></div>
         </article>
         <article>
           <span className="signalIcon">✦</span>
@@ -491,21 +554,21 @@ export default function Home() {
           <article className="featuredBounty">
             <div className="featuredTop">
               <div>
-                <span className="miniLabel">VERIFIED BOUNTY</span>
+                <span className="miniLabel">{verifiedProofState === "live" ? "LIVE VERIFIED BOUNTY" : verifiedProofState === "error" ? "LAST VERIFIED BOUNTY" : "VERIFYING BOUNTY"}</span>
                 <h3>{verifiedDemo.bountyId}</h3>
               </div>
-              <span className={"badge " + String(bounty?.status || "loading").toLowerCase()}>
-                {bounty?.status || "Loading"}
+              <span className={"badge " + String(canonicalBounty?.status || "loading").toLowerCase()}>
+                {canonicalBounty?.status || "Loading"}
               </span>
             </div>
             <p className="featuredQuestion">
-              {bounty?.question || "Loading the canonical on-chain benchmark..."}
+              {canonicalBounty?.question || "Loading the canonical on-chain benchmark..."}
             </p>
             <div className="featuredMetrics">
-              <div><small>Entries</small><strong>{String(bounty?.submission_count ?? "—")}</strong></div>
-              <div><small>Winner</small><strong>{bounty?.winner_submission_id || "—"}</strong></div>
-              <div><small>Score</small><strong>{bounty?.winning_score ? String(bounty.winning_score) + "/100" : "—"}</strong></div>
-              <div><small>Reason</small><strong>{bounty?.reason_code || "—"}</strong></div>
+              <div><small>Entries</small><strong>{String(canonicalBounty?.submission_count ?? "—")}</strong></div>
+              <div><small>Winner</small><strong>{canonicalBounty?.winner_submission_id || "—"}</strong></div>
+              <div><small>Score</small><strong>{canonicalBounty?.winning_score ? String(canonicalBounty.winning_score) + "/100" : "—"}</strong></div>
+              <div><small>Reason</small><strong>{canonicalBounty?.reason_code || "—"}</strong></div>
             </div>
             <div className="featuredActions">
               <a href="#proof">Audit settlement</a>
@@ -534,7 +597,7 @@ export default function Home() {
             <span className="miniLabel">ON-CHAIN DISCOVERY</span>
             <h3>Indexed bounties</h3>
           </div>
-          <span>{marketBounties.length ? String(marketBounties.length) + " loaded" : "Loading markets…"}</span>
+          <span>{marketState === "live" ? String(marketBounties.length) + " loaded" : marketState === "error" ? "Index unavailable" : "Loading markets…"}</span>
         </div>
         <div className="marketList">
           {marketBounties.length ? marketBounties.map((item) => (
@@ -561,7 +624,11 @@ export default function Home() {
               </div>
             </button>
           )) : (
-            <div className="marketEmpty">Reading the on-chain bounty index…</div>
+            <div className="marketEmpty">
+              {marketState === "error"
+                ? "The live Studionet index is temporarily unavailable. No cached market is presented as live."
+                : "Reading the on-chain bounty index…"}
+            </div>
           )}
         </div>
       </section>
@@ -577,6 +644,15 @@ export default function Home() {
           </p>
         </div>
 
+        <div className={"systemStatus " + (verifiedProofState === "live" ? "good" : "neutral")}>
+          <span />
+          {verifiedProofState === "live"
+            ? "Live RPC read verified from the deployed contract"
+            : verifiedProofState === "error"
+              ? "Live RPC unavailable — showing the last verified settlement snapshot; use Explorer and CI proof to audit it"
+              : "Verifying the canonical settlement from Studionet…"}
+        </div>
+
         <div className="proofGrid">
           <div className="proofResult">
             <div className="proofTop">
@@ -588,14 +664,14 @@ export default function Home() {
             </div>
             <div className="proofMetrics">
               <div><small>Bounty</small><b>{verifiedDemo.bountyId}</b></div>
-              <div><small>Status</small><b>{bounty?.status || "Loading..."}</b></div>
-              <div><small>Winner</small><b>{bounty?.winner_submission_id || "Loading..."}</b></div>
-              <div><small>Score</small><b>{bounty?.winning_score ? `${bounty.winning_score}/100` : "Loading..."}</b></div>
-              <div><small>Runner-up</small><b>{bounty?.runner_up_score ? `${bounty.runner_up_score}/100` : "Loading..."}</b></div>
-              <div><small>Agreed reason</small><b>{bounty?.reason_code || "Loading..."}</b></div>
-              <div><small>Reward claimed</small><b>{bounty?.reward_claimed ? "Yes" : "Loading..."}</b></div>
+              <div><small>Status</small><b>{canonicalBounty?.status || "Loading..."}</b></div>
+              <div><small>Winner</small><b>{canonicalBounty?.winner_submission_id || "Loading..."}</b></div>
+              <div><small>Score</small><b>{canonicalBounty?.winning_score ? `${canonicalBounty.winning_score}/100` : "Loading..."}</b></div>
+              <div><small>Runner-up</small><b>{canonicalBounty?.runner_up_score ? `${canonicalBounty.runner_up_score}/100` : "Loading..."}</b></div>
+              <div><small>Agreed reason</small><b>{canonicalBounty?.reason_code || "Loading..."}</b></div>
+              <div><small>Reward claimed</small><b>{canonicalBounty ? (canonicalBounty.reward_claimed ? "Yes" : "No") : "Loading..."}</b></div>
             </div>
-            {bounty?.rationale && <blockquote>{bounty.rationale}</blockquote>}
+            {canonicalBounty?.rationale && <blockquote>{canonicalBounty.rationale}</blockquote>}
           </div>
 
           <div className="proofTransactions">
@@ -740,7 +816,7 @@ export default function Home() {
             </label>
             <div className="sourceRule">
               <b>Evidence rule</b>
-              <span>Both evidence URLs must be HTTPS and come from different domains.</span>
+              <span>Both evidence URLs must be HTTPS and use distinct hostnames; source authority is judged from the live evidence.</span>
             </div>
             <button className="action" type="submit" disabled={busy}>{busy ? "Processing…" : "Enter the research arena"}</button>
           </form>}
@@ -768,11 +844,16 @@ export default function Home() {
               <input value={inspectId} onChange={(e) => setInspectId(e.target.value)} />
             </label>
             <button onClick={() => void loadBounty()} disabled={busy}>Read state</button>
-            <button onClick={closeBounty} disabled={busy}>Close entries</button>
-            <button className="resolve" onClick={resolveBounty} disabled={busy}>Resolve by consensus</button>
-            <button onClick={claimReward} disabled={busy}>Claim winner reward</button>
-            <button onClick={refundUnfilledBounty} disabled={busy}>Refund unfilled</button>
+            <button onClick={closeBounty} disabled={busy || !closeAllowed}>Close entries</button>
+            <button className="resolve" onClick={resolveBounty} disabled={busy || !resolveAllowed}>Resolve by consensus</button>
+            <button onClick={claimReward} disabled={busy || !claimAllowed}>Claim winner reward</button>
+            <button onClick={refundUnfilledBounty} disabled={busy || !refundAllowed}>Refund unfilled</button>
           </div>
+          {bounty?.status === "OPEN" && entryCount >= 2 && entryCount < entryCap && !deadlinePassed && (
+            <div className="formFootnote">
+              Fair-close guard: the sponsor cannot end this market early while {entryCap - entryCount} reserved slot{entryCap - entryCount === 1 ? "" : "s"} remain. Fill the cap or wait for the deadline.
+            </div>
+          )}
 
           {lastTx && (
             <div className="txLine">

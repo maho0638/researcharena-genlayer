@@ -9,7 +9,7 @@ def create_demo_bounty(direct_vm, contract, creator):
         "Which report best proves the claim?",
         "Prefer direct, authoritative, independent evidence.",
         4000000000,
-        3,
+        2,
     )
     direct_vm.value = 0
 
@@ -165,6 +165,43 @@ def test_consensus_selects_stronger_research(
     assert bounty.runner_up_score == 41
     assert bounty.reason_code == "SOURCE_AUTHORITY"
     assert "authoritative evidence" in bounty.rationale
+
+
+def test_creator_cannot_close_underfilled_bounty_before_deadline(
+    direct_vm, direct_deploy, direct_alice, direct_bob, direct_charlie
+):
+    direct_vm.sender = direct_alice
+    direct_vm.value = 1000
+    contract = direct_deploy("contracts/research_arena.py")
+    contract.create_bounty(
+        "fair-close",
+        "Which report is best supported?",
+        "Prefer direct and authoritative evidence.",
+        4000000000,
+        3,
+    )
+    direct_vm.value = 0
+
+    direct_vm.sender = direct_bob
+    contract.submit_research(
+        "fair-close",
+        "bob-entry",
+        "https://report-a.example/research",
+        "https://source-a.example/a",
+        "https://source-b.example/b",
+    )
+    direct_vm.sender = direct_charlie
+    contract.submit_research(
+        "fair-close",
+        "charlie-entry",
+        "https://report-b.example/research",
+        "https://source-c.example/c",
+        "https://source-d.example/d",
+    )
+
+    direct_vm.sender = direct_alice
+    with direct_vm.expect_revert("submission cap is reached"):
+        contract.close_bounty("fair-close")
 
 
 def test_non_creator_cannot_close(

@@ -203,6 +203,13 @@ class ResearchArena(gl.Contract):
             raise gl.vm.UserError("Bounty is not open")
         if int(bounty.submission_count) < 2:
             raise gl.vm.UserError("At least two submissions are required")
+        if (
+            self._now() <= int(bounty.deadline)
+            and int(bounty.submission_count) < int(bounty.max_submissions)
+        ):
+            raise gl.vm.UserError(
+                "Cannot close early until the submission cap is reached"
+            )
         bounty.status = "CLOSED"
 
     @gl.public.write
@@ -268,12 +275,20 @@ SUBMISSIONS:
 Choose exactly one winner. Prefer direct evidence, authoritative independent
 sources, internal consistency, and rubric compliance.
 
-Return JSON only:
+Also choose exactly one primary reason code that best explains the winner's
+advantage. It MUST be one of:
+- DIRECTNESS
+- SOURCE_AUTHORITY
+- INDEPENDENT_CORROBORATION
+- RUBRIC_FIT
+- EVIDENCE_CONSISTENCY
+
+Return JSON only with every field present:
 {{
   "winner_id": "exact submission id",
   "winner_score": integer 0 to 100,
   "runner_up_score": integer 0 to 100,
-  "rationale": "concise reason under 300 characters"
+  "reason_code": "one allowed reason code"
 }}
 """
             result = gl.nondet.exec_prompt(prompt, response_format="json")

@@ -15,6 +15,8 @@ ResearchArena is intentionally mapped to the current Project review criteria.
 | Meaningfully different product | ResearchArena is a multi-participant evidence competition with escrow and winner payout, not a starter-template classifier or generic chatbot. | 2–5 participant market lifecycle plus consensus settlement. |
 | Working demo | A read-only verified benchmark loads without a wallet, while the full create → submit → close → resolve → claim workflow remains interactive. | Production Vercel deployment + Verified Live Proof section. |
 | Marketplace discovery | The Intelligent Contract exposes bounty count/index views so clients can enumerate markets on-chain instead of relying on a centralized index. | `get_bounty_count`, `get_bounty_id`, and the production market cards. |
+| Fair market closure | A sponsor cannot selectively truncate an advertised market before the deadline unless the declared entry cap is full. | `close_bounty` guard + direct tests + disabled close action in the UI. |
+| Reviewer-proof isolation | The canonical verified settlement has its own state, independent from whichever market a user opens in the workspace. RPC failure falls back to a clearly labeled last-verified snapshot instead of pretending cached data is live. | Production frontend verified-proof state and failure mode. |
 
 ## Verified final benchmark
 

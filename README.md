@@ -22,7 +22,7 @@ The project is not a chatbot or an LLM wrapper. The consensus result determines 
 
 1. **Create bounty** — sponsor locks GEN and commits to the question/rubric.
 2. **Compete** — 2–5 independent wallets submit one report each, with two distinct HTTPS evidence sources.
-3. **Close** — sponsor closes early after at least two entries, or waits for the deadline.
+3. **Close** — the sponsor can close before the deadline only when the declared entry cap is full; otherwise the market stays open until the deadline.
 4. **Resolve** — GenLayer fetches all live evidence and validators independently judge the same competition.
 5. **Claim** — only the consensus-selected researcher can claim the escrowed reward.
 
@@ -67,13 +67,14 @@ Consensus rationale:
 - bounty creator cannot compete in their own bounty
 - three public HTTPS URLs per entry: report + two evidence sources
 - duplicate submission IDs rejected
-- the two evidence URLs must be distinct and come from independent hostnames
+- the two evidence URLs must be distinct and use different hostnames; source authority and real independence remain part of the live evidence judgment
 - webpage content is explicitly treated as untrusted input
-- validators independently recompute the winner, both settlement scores, and an exact structured reason code
+- validators independently recompute the winner, both settlement scores, and an explicitly requested structured reason code
 - reward claim is restricted to the stored winner
 - claim state is updated before the external transfer
 - unfilled bounties have a creator-only refund path; with one entry, refund requires the deadline to pass
 - an on-chain bounty index lets clients discover markets without knowing IDs in advance
+- sponsors cannot truncate a still-open competition before the advertised entry cap is full
 
 ## Automated checks
 

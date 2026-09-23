@@ -16,7 +16,7 @@ ResearchArena makes GenLayer the settlement layer:
 
 - live web evidence is fetched at judgment time;
 - an LLM evaluates every competing report under the sponsor's precommitted rubric;
-- validators independently repeat the comparison and must agree on the same winner, bounded winner/runner-up scores, and the exact structured reason code;
+- validators independently repeat the comparison and must agree on the same winner, bounded winner/runner-up scores, and the exact explicitly requested structured reason code;
 - consensus fixes the winner, score, runner-up score, and rationale on-chain;
 - the result controls a native GEN reward held by the contract.
 
@@ -24,7 +24,7 @@ ResearchArena makes GenLayer the settlement layer:
 
 1. Sponsor creates a bounty and deposits native GEN.
 2. Independent researcher wallets submit one report each plus two HTTPS evidence URLs from independent hostnames.
-3. Sponsor closes entries once at least two reports exist, or resolution waits for the deadline.
+3. Before the deadline, the sponsor can close only after the advertised entry cap is filled; otherwise the market remains open until the deadline.
 4. GenLayer renders every report and source.
 5. The leader proposes the best-supported entry.
 6. Validators independently re-evaluate the same evidence.

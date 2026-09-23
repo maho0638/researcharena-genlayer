@@ -2,6 +2,7 @@ name: Deploy & Verify Studionet
 
 on:
   push:
+    branches: [main]
     paths:
       - ".github/workflows/deploy-studionet.yml"
       - "contracts/research_arena.py"
