@@ -30,18 +30,18 @@ The project is not a chatbot or an LLM wrapper. The consensus result determines 
 
 - **Network:** GenLayer Studionet
 - **Chain ID:** 61999
-- **Contract:** `0xCf72C9fD0B87799762b63Dd8F7c349eb18800514`
-- **Explorer:** https://explorer-studio.genlayer.com/address/0xCf72C9fD0B87799762b63Dd8F7c349eb18800514
-- **Successful full lifecycle workflow:** https://github.com/maho0638/researcharena-genlayer/actions/runs/35853517282
+- **Contract:** `0xb501Af6f93218abDd0001C5Bcb37B800656B77a4`
+- **Explorer:** https://explorer-studio.genlayer.com/address/0xb501Af6f93218abDd0001C5Bcb37B800656B77a4
+- **Successful full lifecycle workflow:** https://github.com/maho0638/researcharena-genlayer/actions/runs/35854134127
 
 ### Real end-to-end transactions
 
-- Create escrowed bounty: https://explorer-studio.genlayer.com/tx/0xfe7c14993590d8dbeb29b750698b243446a3c3d8f6d66ea29ec5f00578de1821
-- Submit primary report: https://explorer-studio.genlayer.com/tx/0xc02a97c9898057f18f83325f45321bef23c05065581333ccc48b857c7b757a7c
-- Submit competing report: https://explorer-studio.genlayer.com/tx/0x0a41d748ee149d28a22faa595d811c86d42e16fc0e41685fbe6ba5cfc10c2180
-- Close submissions: https://explorer-studio.genlayer.com/tx/0x5a2c2eaca00ce9ac579a3cf6743e808f4f19a17ef6be9d276fc54b74e6262649
-- Resolve by validator consensus: https://explorer-studio.genlayer.com/tx/0x7552c70a8154eb95237a71d6bf968b7c267b2007ffd73c9926c40ca91d655f2a
-- Winner claims reward: https://explorer-studio.genlayer.com/tx/0x4a36d0512653622e5a567c04bc9677fb918f690d3a4bc9deab05c059a18a97ab
+- Create escrowed bounty: https://explorer-studio.genlayer.com/tx/0x2a85dd5f1eb16178f9cc56109776111f0f0e659bfb732577b1c4b42d76f69cc0
+- Submit primary report: https://explorer-studio.genlayer.com/tx/0x9b35c6136dfedaf20ad45290d833e21deab8d3b0086e13baaf1566125ce60afd
+- Submit competing report: https://explorer-studio.genlayer.com/tx/0xf01e9dea4771e493980442833e183159cef63c029a0a6a74e30a3f65e69deb1f
+- Close submissions: https://explorer-studio.genlayer.com/tx/0xd44dd40f6fbee25e95cfc303c32a5ddfb780aea1f3422aabd40ddfa35e98b65e
+- Resolve by validator consensus: https://explorer-studio.genlayer.com/tx/0x5b883000af40b9e144206ec16d3e2b2aad4e9896f9bd47a680e5f164bf9e8e63
+- Winner claims reward: https://explorer-studio.genlayer.com/tx/0x5133f6d8bd122f470285401e1ff7404fdd6f9cbc36fc2b1599a8908c27f27ad1
 
 ### Stored result
 
@@ -49,13 +49,13 @@ The live test compared a primary IANA/RFC-backed report against a generic compet
 
 - status: `RESOLVED`
 - winner: `primary-report`
-- winning score: `97/100`
-- runner-up score: `38/100`
+- winning score: `95/100`
+- runner-up score: `20/100`
 - reward claimed: `true`
 
 Consensus rationale:
 
-> primary-report directly names example.com in IANA text and cites RFC 2606/RFC 6761 for documentation-purpose reservation. generic-report only shows generic example.org text and unrelated homepages.
+> primary-report cites IANA's dedicated example-domains page explicitly naming example.com, plus RFC 2606 and RFC 6761 as standards-track authority. generic-report only references example.org and generic IANA/RFC homepages without specific claims.
 
 ## Safety and market integrity
 

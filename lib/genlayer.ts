@@ -12,7 +12,7 @@ declare global {
 }
 
 export const CONTRACT_ADDRESS = (
-  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "0xCf72C9fD0B87799762b63Dd8F7c349eb18800514"
+  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "0xb501Af6f93218abDd0001C5Bcb37B800656B77a4"
 ) as `0x${string}`;
 
 export function readClient() {
