@@ -31,3 +31,8 @@ The validator does not merely check JSON shape. It performs the evidence retriev
 ## Bounded evaluation
 
 The market accepts 2–5 entries. Each entry is bounded to a report plus two evidence URLs, and fetched text is capped before prompting. This limits cost and keeps validator work reproducible.
+
+
+## On-chain market discovery
+
+The contract keeps a monotonic `bounty_count` plus `bounty_index` mapping. Frontends can enumerate recent markets using `get_bounty_count()` and `get_bounty_id(index)` and then read each `Bounty` directly from contract state. This avoids making a centralized database authoritative for market discovery.

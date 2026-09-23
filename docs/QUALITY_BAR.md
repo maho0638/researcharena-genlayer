@@ -14,15 +14,16 @@ ResearchArena is intentionally mapped to the current Project review criteria.
 | Full UI transaction lifecycle | The production Next.js UI connects a wallet, estimates fees, writes contract transactions, waits for finalized execution, and reads on-chain state. | `app/page.tsx` and `lib/genlayer.ts`. |
 | Meaningfully different product | ResearchArena is a multi-participant evidence competition with escrow and winner payout, not a starter-template classifier or generic chatbot. | 2–5 participant market lifecycle plus consensus settlement. |
 | Working demo | A read-only verified benchmark loads without a wallet, while the full create → submit → close → resolve → claim workflow remains interactive. | Production Vercel deployment + Verified Live Proof section. |
+| Marketplace discovery | The Intelligent Contract exposes bounty count/index views so clients can enumerate markets on-chain instead of relying on a centralized index. | `get_bounty_count`, `get_bounty_id`, and the production market cards. |
 
 ## Verified final benchmark
 
-- Contract: `0x4c52bAEd4C5562864768BEd411804e56208D4347`
-- Workflow: https://github.com/maho0638/researcharena-genlayer/actions/runs/35881343633
+- Contract: `0x1ca016381CC68dEF3e3028eefdBaDbadf2b80dA2`
+- Workflow: https://github.com/maho0638/researcharena-genlayer/actions/runs/35912412402
 - Status: `RESOLVED`
 - Winner: `primary-report`
-- Score: `92/100`
-- Runner-up: `18/100`
+- Score: `95/100`
+- Runner-up: `20/100`
 - Reason code: `RUBRIC_FIT`
 - Reward claimed: `true`
 

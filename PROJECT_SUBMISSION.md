@@ -31,42 +31,43 @@ ResearchArena makes GenLayer the settlement layer:
 7. The consensus winner is stored on-chain.
 8. Only that winning researcher can claim the escrowed GEN.
 9. If a bounty remains unfilled, the creator has a guarded refund path instead of leaving GEN permanently locked.
+10. The contract maintains an on-chain bounty index so frontends can discover markets without requiring pre-known IDs.
 
 ## Live Studionet evidence
 
 Contract:
-https://explorer-studio.genlayer.com/address/0x4c52bAEd4C5562864768BEd411804e56208D4347
+https://explorer-studio.genlayer.com/address/0x1ca016381CC68dEF3e3028eefdBaDbadf2b80dA2
 
 Address:
-`0x4c52bAEd4C5562864768BEd411804e56208D4347`
+`0x1ca016381CC68dEF3e3028eefdBaDbadf2b80dA2`
 
 Successful full lifecycle:
-https://github.com/maho0638/researcharena-genlayer/actions/runs/35881343633
+https://github.com/maho0638/researcharena-genlayer/actions/runs/35912412402
 
 Create bounty:
-https://explorer-studio.genlayer.com/tx/0x2449fde5eb396e2a6e395f294b16a0c8244e5735dbfd8b3f1d885d535aae70ce
+https://explorer-studio.genlayer.com/tx/0xad4b1139b373a2a56981dcf34455e6da52ecebfa1934054ab7cb3141c9d8d5d5
 
 Primary submission:
-https://explorer-studio.genlayer.com/tx/0x88e8580ac40751891dc9ae32f89808b2bda08f8df5c89f1344cada6aaab86445
+https://explorer-studio.genlayer.com/tx/0xbe796ea1d7d3187b3b905897e682edbd4ccd346c5c4a784add109e400484226c
 
 Competing submission:
-https://explorer-studio.genlayer.com/tx/0xa6650fc4c5ca6c16f82444427ed056975e2f9e93ec253ea10a5eaed5abf8b483
+https://explorer-studio.genlayer.com/tx/0xfd6bca0f3dc250372033d63b4b416ee1779e1684d0a9f41a05b4e575d7bae46d
 
 Close:
-https://explorer-studio.genlayer.com/tx/0x66e8b7d083112f7fec43577ce11447b15554ed6dae275abb441da38c3de347a3
+https://explorer-studio.genlayer.com/tx/0xb4ff58beec90ce06b20a6bd62fe13845430a2d718823f48527af2ad7088bd6de
 
 Consensus resolution:
-https://explorer-studio.genlayer.com/tx/0xbe2332d2c8db6819ffaae661edfbea023763638e1157852a8c62d7036217cd28
+https://explorer-studio.genlayer.com/tx/0x772d1b88fa3b8ef1fca179fa00866b3228a6e9ffa9b5c2f816069bf36cd186b6
 
 Winner reward claim:
-https://explorer-studio.genlayer.com/tx/0x9ccd75dd3d210eaa76ee1ddd3f0e111598ebc7550df0c5c23be08295459db237
+https://explorer-studio.genlayer.com/tx/0xf193bdbb97ac9dae55939065718a07e1b0925cbcdc551d547cf6b6be39b3ef34
 
 Verified stored result:
 
 - `status = RESOLVED`
 - `winner_submission_id = primary-report`
-- `winning_score = 92`
-- `runner_up_score = 18`
+- `winning_score = 95`
+- `runner_up_score = 20`
 - `reason_code = RUBRIC_FIT`
 - `reward_claimed = true`
 
