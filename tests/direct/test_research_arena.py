@@ -158,7 +158,7 @@ def test_consensus_selects_stronger_research(
 
     assert bounty.status == "RESOLVED"
     assert bounty.winner_submission_id == "primary-report"
-    assert bounty.winner == direct_bob
+    assert str(bounty.winner).lower() == "0x" + direct_bob.hex()
     assert bounty.winning_score == 96
     assert bounty.runner_up_score == 41
 
