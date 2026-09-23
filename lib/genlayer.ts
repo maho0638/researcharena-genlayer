@@ -11,9 +11,10 @@ declare global {
   }
 }
 
-export const CONTRACT_ADDRESS = (
-  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "0x3877C0a69a42a01c9c6a4708aCca25bA5573814C"
-) as `0x${string}`;
+// Canonical reviewer deployment. Keep this pinned in source so a stale Vercel
+// environment variable cannot silently point production at an older contract.
+export const CONTRACT_ADDRESS =
+  "0x3877C0a69a42a01c9c6a4708aCca25bA5573814C" as `0x${string}`;
 
 export function readClient() {
   const config: any = { chain: studionet };
