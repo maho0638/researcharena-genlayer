@@ -1,0 +1,22 @@
+name: Deploy & Verify Studionet
+
+on:
+  push:
+    paths:
+      - ".github/workflows/deploy-studionet.yml"
+      - "contracts/research_arena.py"
+      - "tests/integration/test_studionet_full_flow.py"
+  workflow_dispatch:
+
+jobs:
+  full-live-flow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Deploy and execute full ResearchArena lifecycle
+        run: gltest tests/integration/test_studionet_full_flow.py -v -s --network studionet
