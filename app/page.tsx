@@ -32,8 +32,9 @@ type BountyView = {
 const explorerBase = "https://explorer-studio.genlayer.com";
 
 const verifiedDemo = {
+  contract: "0x3877C0a69a42a01c9c6a4708aCca25bA5573814C",
   bountyId: "example-domain-research-v1",
-  workflow: "https://github.com/maho0638/researcharena-genlayer/actions/runs/35912412402",
+  workflow: "https://github.com/maho0638/researcharena-genlayer/actions/runs/35918043606",
   expected: {
     id: "example-domain-research-v1",
     question: "Which submitted report most directly and authoritatively establishes that example.com is reserved for documentation examples?",
@@ -41,19 +42,19 @@ const verifiedDemo = {
     max_submissions: 2,
     submission_count: 2,
     winner_submission_id: "primary-report",
-    winning_score: 95,
-    runner_up_score: 20,
+    winning_score: 98,
+    runner_up_score: 32,
     reason_code: "RUBRIC_FIT",
     reward_claimed: true,
-    rationale: "primary-report won because the report best satisfied the sponsor's precommitted rubric. Score 95/100 vs 20/100.",
+    rationale: "primary-report won because the report best satisfied the sponsor's precommitted rubric. Score 98/100 vs 32/100.",
   } satisfies BountyView,
   transactions: [
-    ["Create escrow", "0xad4b1139b373a2a56981dcf34455e6da52ecebfa1934054ab7cb3141c9d8d5d5"],
-    ["Submit primary", "0xbe796ea1d7d3187b3b905897e682edbd4ccd346c5c4a784add109e400484226c"],
-    ["Submit competitor", "0xfd6bca0f3dc250372033d63b4b416ee1779e1684d0a9f41a05b4e575d7bae46d"],
-    ["Close entries", "0xb4ff58beec90ce06b20a6bd62fe13845430a2d718823f48527af2ad7088bd6de"],
-    ["Resolve consensus", "0x772d1b88fa3b8ef1fca179fa00866b3228a6e9ffa9b5c2f816069bf36cd186b6"],
-    ["Claim reward", "0xf193bdbb97ac9dae55939065718a07e1b0925cbcdc551d547cf6b6be39b3ef34"],
+    ["Create escrow", "0x926e60299187d2b00106b7b3db49b5983b0f39f9e5cb7803da8187ecacdb52b1"],
+    ["Submit primary", "0xdb1febe4ee75e62840789ba08009be3fc7cf88fdb88801dee0733df5bc8dfeb0"],
+    ["Submit competitor", "0x6783c4df8188c817574cc3529bcd67928fa942e64c65c3e280fa73026afefde4"],
+    ["Close entries", "0x8bc3d071e8580b3dd544b358d40b46a30007cc080f1fdd24efbe94238b62b18e"],
+    ["Resolve consensus", "0x014a214af5be604a1c4dfd5b825c08facb3d203f661fa4c32983d1ac3e8bda06"],
+    ["Claim reward", "0x262268fff6d4a0e875ec44119883aeb459528d4279a01d45d471af4b78299e3f"],
   ] as const,
 };
 
@@ -400,6 +401,19 @@ export default function Home() {
 
   const canonicalBounty =
     verifiedBounty || (verifiedProofState === "error" ? verifiedDemo.expected : null);
+
+  const integrityChecks = [
+    ["Contract", CONTRACT_ADDRESS.toLowerCase() === verifiedDemo.contract.toLowerCase()],
+    ["Status", canonicalBounty?.status === verifiedDemo.expected.status],
+    ["Winner", canonicalBounty?.winner_submission_id === verifiedDemo.expected.winner_submission_id],
+    ["Winner score", Number(canonicalBounty?.winning_score ?? -1) === Number(verifiedDemo.expected.winning_score)],
+    ["Runner-up score", Number(canonicalBounty?.runner_up_score ?? -1) === Number(verifiedDemo.expected.runner_up_score)],
+    ["Reason metadata", canonicalBounty?.reason_code === verifiedDemo.expected.reason_code],
+    ["Reward claimed", canonicalBounty?.reward_claimed === verifiedDemo.expected.reward_claimed],
+  ] as const;
+  const integrityPassed = integrityChecks.filter(([, passed]) => passed).length;
+  const integrityComplete = verifiedProofState === "live" && integrityPassed === integrityChecks.length;
+
   const entryCount = Number(bounty?.submission_count ?? 0);
   const entryCap = Number(bounty?.max_submissions ?? 0);
   const deadline = Number(bounty?.deadline ?? 0);
@@ -653,6 +667,28 @@ export default function Home() {
               : "Verifying the canonical settlement from Studionet…"}
         </div>
 
+        <div className={"integrityPanel " + (integrityComplete ? "pass" : verifiedProofState === "error" ? "fallback" : "")}>
+          <div className="integrityTop">
+            <div>
+              <span>REVIEWER INTEGRITY GATE</span>
+              <strong>{verifiedProofState === "live" ? `${integrityPassed}/${integrityChecks.length} live checks match` : verifiedProofState === "error" ? "Snapshot shown — live checks unavailable" : "Checking live settlement integrity…"}</strong>
+            </div>
+            <b>{integrityComplete ? "PASS" : verifiedProofState === "error" ? "FALLBACK" : "VERIFYING"}</b>
+          </div>
+          <div className="integrityChecks">
+            {integrityChecks.map(([label, passed]) => (
+              <div key={label}>
+                <i className={verifiedProofState === "live" && passed ? "ok" : ""} />
+                <span>{label}</span>
+                <strong>{verifiedProofState === "live" ? (passed ? "MATCH" : "MISMATCH") : "—"}</strong>
+              </div>
+            ))}
+          </div>
+          <small>
+            A PASS means the live Studionet read matches the pinned reviewer benchmark for contract, settlement result and claimed reward.
+          </small>
+        </div>
+
         <div className="proofGrid">
           <div className="proofResult">
             <div className="proofTop">
@@ -668,7 +704,7 @@ export default function Home() {
               <div><small>Winner</small><b>{canonicalBounty?.winner_submission_id || "Loading..."}</b></div>
               <div><small>Score</small><b>{canonicalBounty?.winning_score ? `${canonicalBounty.winning_score}/100` : "Loading..."}</b></div>
               <div><small>Runner-up</small><b>{canonicalBounty?.runner_up_score ? `${canonicalBounty.runner_up_score}/100` : "Loading..."}</b></div>
-              <div><small>Agreed reason</small><b>{canonicalBounty?.reason_code || "Loading..."}</b></div>
+              <div><small>Stored reason</small><b>{canonicalBounty?.reason_code || "Loading..."}</b></div>
               <div><small>Reward claimed</small><b>{canonicalBounty ? (canonicalBounty.reward_claimed ? "Yes" : "No") : "Loading..."}</b></div>
             </div>
             {canonicalBounty?.rationale && <blockquote>{canonicalBounty.rationale}</blockquote>}
