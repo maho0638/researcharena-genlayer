@@ -75,8 +75,8 @@ def test_duplicate_researcher_is_rejected(
         "research-1",
         "bob-1",
         "https://report.example/a",
-        "https://source.example/a",
-        "https://source.example/b",
+        "https://source-a.example/a",
+        "https://source-b.example/b",
     )
 
     with direct_vm.expect_revert("already submitted"):
@@ -84,8 +84,8 @@ def test_duplicate_researcher_is_rejected(
             "research-1",
             "bob-2",
             "https://report.example/c",
-            "https://source.example/c",
-            "https://source.example/d",
+            "https://source-c.example/c",
+            "https://source-d.example/d",
         )
 
 
@@ -176,16 +176,16 @@ def test_non_creator_cannot_close(
         "research-1",
         "bob-entry",
         "https://report.example/bob",
-        "https://source.example/a",
-        "https://source.example/b",
+        "https://source-a.example/a",
+        "https://source-b.example/b",
     )
     direct_vm.sender = direct_charlie
     contract.submit_research(
         "research-1",
         "charlie-entry",
         "https://report.example/charlie",
-        "https://source.example/c",
-        "https://source.example/d",
+        "https://source-c.example/c",
+        "https://source-d.example/d",
     )
 
     direct_vm.sender = direct_bob
