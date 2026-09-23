@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
   CONTRACT_ADDRESS,
   formatGen,
@@ -29,6 +29,19 @@ type BountyView = {
 };
 
 const explorerBase = "https://explorer-studio.genlayer.com";
+
+const verifiedDemo = {
+  bountyId: "example-domain-research-v1",
+  workflow: "https://github.com/maho0638/researcharena-genlayer/actions/runs/35855964117",
+  transactions: [
+    ["Create escrow", "0xb006507d076b11f0e6a0b643c7b2672c0db97b5919d5133fab6424f50e352a4d"],
+    ["Submit primary", "0x561c2824cc7a8c01b2d7424dab4e19b1afc3f8c3f9ea64ca6931290979aaad80"],
+    ["Submit competitor", "0xc191928f77a43bc39c1e6f1cdbf274bf9551982f86db610230e06d0db96915c4"],
+    ["Close entries", "0xc5abe1793c4ba359cc9d59cb519be5c117c7b7759f605f328118621842be12ad"],
+    ["Resolve consensus", "0x485135e7c20175db1ddec96c954d1b061e81172609454276f8842348fe4b72f2"],
+    ["Claim reward", "0x22abe8fd863cc4d3a6225881d64ad3d6ca3f8ddc180ec44360bec51ec0986f34"],
+  ] as const,
+};
 
 function short(value?: string) {
   if (!value) return "—";
@@ -73,6 +86,10 @@ export default function Home() {
     if (value.includes("submitted") || value.includes("resolved") || value.includes("loaded") || value.includes("claimed")) return "good";
     return "neutral";
   }, [status]);
+
+  useEffect(() => {
+    if (deployed) void loadBounty(verifiedDemo.bountyId);
+  }, []);
 
   async function connectWallet() {
     try {
@@ -199,15 +216,16 @@ export default function Home() {
     }
   }
 
-  async function loadBounty() {
+  async function loadBounty(targetId?: string) {
     if (!deployed) return setStatus("Contract deployment is not configured yet.");
+    const id = targetId || inspectId;
     try {
       setStatus("Reading on-chain bounty...");
       const client: any = readClient();
       const data: any = await client.readContract({
         address: CONTRACT_ADDRESS,
         functionName: "get_bounty",
-        args: [inspectId],
+        args: [id],
       });
       setBounty(data);
 
@@ -217,12 +235,12 @@ export default function Home() {
         const sid = await client.readContract({
           address: CONTRACT_ADDRESS,
           functionName: "get_submission_id",
-          args: [inspectId, BigInt(index)],
+          args: [id, BigInt(index)],
         });
         const submission = await client.readContract({
           address: CONTRACT_ADDRESS,
           functionName: "get_submission",
-          args: [inspectId, sid],
+          args: [id, sid],
         });
         loaded.push(submission);
       }
@@ -309,6 +327,54 @@ export default function Home() {
         <div><strong>3 URLs</strong><span>report + 2 evidence sources</span></div>
         <div><strong>1 winner</strong><span>consensus-selected</span></div>
         <div><strong>GEN</strong><span>native escrow & payout</span></div>
+      </section>
+
+      <section className="proofSection" id="proof">
+        <div className="sectionHeading">
+          <span>VERIFIED LIVE PROOF</span>
+          <h2>A complete bounty settled on Studionet.</h2>
+          <p>
+            No wallet is required to audit this demo. The page loads the stored
+            result directly from the deployed Intelligent Contract, and every
+            transaction in the lifecycle is linked below.
+          </p>
+        </div>
+
+        <div className="proofGrid">
+          <div className="proofResult">
+            <div className="proofTop">
+              <span className="liveDot" />
+              <strong>Consensus settlement</strong>
+              <a href={verifiedDemo.workflow} target="_blank" rel="noreferrer">
+                CI proof ↗
+              </a>
+            </div>
+            <div className="proofMetrics">
+              <div><small>Bounty</small><b>{verifiedDemo.bountyId}</b></div>
+              <div><small>Status</small><b>{bounty?.status || "Loading..."}</b></div>
+              <div><small>Winner</small><b>{bounty?.winner_submission_id || "Loading..."}</b></div>
+              <div><small>Score</small><b>{bounty?.winning_score ? `${bounty.winning_score}/100` : "Loading..."}</b></div>
+              <div><small>Runner-up</small><b>{bounty?.runner_up_score ? `${bounty.runner_up_score}/100` : "Loading..."}</b></div>
+              <div><small>Reward claimed</small><b>{bounty?.reward_claimed ? "Yes" : "Loading..."}</b></div>
+            </div>
+            {bounty?.rationale && <blockquote>{bounty.rationale}</blockquote>}
+          </div>
+
+          <div className="proofTransactions">
+            {verifiedDemo.transactions.map(([label, hash], index) => (
+              <a
+                key={hash}
+                href={`${explorerBase}/tx/${hash}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <div><b>{label}</b><small>{short(hash)}</small></div>
+                <i>↗</i>
+              </a>
+            ))}
+          </div>
+        </div>
       </section>
 
       <section className="workspace">

@@ -1,0 +1,22 @@
+{
+  "network": "GenLayer Studionet",
+  "chainId": 61999,
+  "contract": "0x6def481601D1c8A81Ca17F8ad4e02725471a72E7",
+  "bountyId": "example-domain-research-v1",
+  "workflow": "https://github.com/maho0638/researcharena-genlayer/actions/runs/35855964117",
+  "expected": {
+    "status": "RESOLVED",
+    "winnerSubmissionId": "primary-report",
+    "winningScore": 95,
+    "runnerUpScore": 25,
+    "rewardClaimed": true
+  },
+  "transactions": {
+    "create": "0xb006507d076b11f0e6a0b643c7b2672c0db97b5919d5133fab6424f50e352a4d",
+    "submitPrimary": "0x561c2824cc7a8c01b2d7424dab4e19b1afc3f8c3f9ea64ca6931290979aaad80",
+    "submitCompetitor": "0xc191928f77a43bc39c1e6f1cdbf274bf9551982f86db610230e06d0db96915c4",
+    "close": "0xc5abe1793c4ba359cc9d59cb519be5c117c7b7759f605f328118621842be12ad",
+    "resolve": "0x485135e7c20175db1ddec96c954d1b061e81172609454276f8842348fe4b72f2",
+    "claim": "0x22abe8fd863cc4d3a6225881d64ad3d6ca3f8ddc180ec44360bec51ec0986f34"
+  }
+}

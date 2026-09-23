@@ -263,10 +263,15 @@ Return JSON only:
             winner_id = str(result.get("winner_id", ""))
             if winner_id not in valid_ids:
                 winner_id = ""
+            winner_score = max(0, min(100, int(result.get("winner_score", 0))))
+            runner_up_score = max(0, min(100, int(result.get("runner_up_score", 0))))
+            if runner_up_score > winner_score:
+                runner_up_score = winner_score
+
             return {
                 "winner_id": winner_id,
-                "winner_score": max(0, min(100, int(result.get("winner_score", 0)))),
-                "runner_up_score": max(0, min(100, int(result.get("runner_up_score", 0)))),
+                "winner_score": winner_score,
+                "runner_up_score": runner_up_score,
                 "rationale": str(result.get("rationale", ""))[:300],
             }
 
@@ -276,11 +281,24 @@ Return JSON only:
             try:
                 validator = leader_fn()
                 leader = leader_result.calldata
-                if str(leader.get("winner_id", "")) != str(validator.get("winner_id", "")):
+                leader_winner = str(leader.get("winner_id", ""))
+                validator_winner = str(validator.get("winner_id", ""))
+
+                if leader_winner not in valid_ids or leader_winner != validator_winner:
                     return False
+
                 leader_score = max(0, min(100, int(leader.get("winner_score", 0))))
                 validator_score = max(0, min(100, int(validator.get("winner_score", 0))))
-                return abs(leader_score - validator_score) <= 12
+                leader_runner = max(0, min(100, int(leader.get("runner_up_score", 0))))
+                validator_runner = max(0, min(100, int(validator.get("runner_up_score", 0))))
+
+                if leader_runner > leader_score or validator_runner > validator_score:
+                    return False
+
+                return (
+                    abs(leader_score - validator_score) <= 12
+                    and abs(leader_runner - validator_runner) <= 12
+                )
             except Exception:
                 return False
 

@@ -16,7 +16,7 @@ ResearchArena makes GenLayer the settlement layer:
 
 - live web evidence is fetched at judgment time;
 - an LLM evaluates every competing report under the sponsor's precommitted rubric;
-- validators independently repeat the comparison;
+- validators independently repeat the comparison and must agree on the same winner plus bounded winner/runner-up scores;
 - consensus fixes the winner, score, runner-up score, and rationale on-chain;
 - the result controls a native GEN reward held by the contract.
 
@@ -88,3 +88,18 @@ https://github.com/maho0638/researcharena-genlayer/blob/main/tests/integration/t
 ResearchArena is not a generic AI evaluator. It is a competitive market with multiple independent participants, precommitted judging rules, bounded public evidence, validator re-execution, escrow, and a winner-only economic settlement.
 
 It is also distinct from ProofJudge: ProofJudge verifies one evidence submission against one requirement; ResearchArena compares multiple competing research submissions and economically rewards the consensus-selected winner.
+
+## Reviewer-first verification
+
+A steward-specific verification guide is available at:
+
+https://github.com/maho0638/researcharena-genlayer/blob/main/docs/STEWARD_VERIFICATION.md
+
+Architecture and security notes:
+
+- https://github.com/maho0638/researcharena-genlayer/blob/main/docs/ARCHITECTURE.md
+- https://github.com/maho0638/researcharena-genlayer/blob/main/docs/SECURITY.md
+
+Machine-readable proof manifest:
+
+https://github.com/maho0638/researcharena-genlayer/blob/main/public/verified-demo.json

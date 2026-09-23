@@ -68,7 +68,7 @@ Consensus rationale:
 - duplicate submission IDs rejected
 - the two evidence URLs must be distinct
 - webpage content is explicitly treated as untrusted input
-- validators independently recompute the winner
+- validators independently recompute the winner and both settlement scores
 - reward claim is restricted to the stored winner
 - claim state is updated before the external transfer
 - unfilled bounties have a creator-only refund path; with one entry, refund requires the deadline to pass
@@ -92,3 +92,7 @@ The repository includes:
 - CI: `.github/workflows/ci.yml`
 - Studionet deployment: `.github/workflows/deploy-studionet.yml`
 - Submission dossier: `PROJECT_SUBMISSION.md`
+- Steward verification: `docs/STEWARD_VERIFICATION.md`
+- Architecture: `docs/ARCHITECTURE.md`
+- Security/failure modes: `docs/SECURITY.md`
+- Machine-readable live proof: `public/verified-demo.json`

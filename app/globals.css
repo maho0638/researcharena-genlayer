@@ -761,3 +761,143 @@ footer a {
     flex-direction: column;
   }
 }
+
+
+.proofSection {
+  width: min(1220px, calc(100% - 40px));
+  margin: 0 auto 86px;
+  padding-top: 6px;
+}
+
+.proofGrid {
+  display: grid;
+  grid-template-columns: 1.15fr .85fr;
+  gap: 16px;
+}
+
+.proofResult,
+.proofTransactions {
+  border: 1px solid var(--line);
+  background: rgba(14, 26, 23, .86);
+  border-radius: 20px;
+  box-shadow: 0 14px 50px rgba(0, 0, 0, .16);
+}
+
+.proofResult {
+  padding: 22px;
+}
+
+.proofTop {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.proofTop strong {
+  color: var(--text);
+}
+
+.proofTop a {
+  margin-left: auto;
+  color: var(--accent-2);
+}
+
+.liveDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--good);
+  box-shadow: 0 0 0 5px rgba(143, 255, 201, .09);
+}
+
+.proofMetrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 9px;
+  margin-top: 20px;
+}
+
+.proofMetrics div {
+  min-height: 78px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #09130f;
+  border: 1px solid #223b33;
+}
+
+.proofMetrics small,
+.proofMetrics b {
+  display: block;
+}
+
+.proofMetrics small {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.proofMetrics b {
+  margin-top: 8px;
+  font-size: 12px;
+  word-break: break-word;
+}
+
+.proofTransactions {
+  padding: 10px 16px;
+}
+
+.proofTransactions a {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #1d302a;
+}
+
+.proofTransactions a:last-child {
+  border-bottom: 0;
+}
+
+.proofTransactions > a > span {
+  color: var(--accent);
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.proofTransactions b,
+.proofTransactions small {
+  display: block;
+}
+
+.proofTransactions b {
+  font-size: 11px;
+}
+
+.proofTransactions small {
+  color: var(--muted);
+  font-size: 9px;
+  margin-top: 3px;
+}
+
+.proofTransactions i {
+  color: var(--accent-2);
+  font-style: normal;
+}
+
+@media (max-width: 980px) {
+  .proofGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .proofSection {
+    width: min(100% - 24px, 1220px);
+  }
+
+  .proofMetrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
