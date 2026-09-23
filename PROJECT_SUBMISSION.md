@@ -30,42 +30,43 @@ ResearchArena makes GenLayer the settlement layer:
 6. Validators independently re-evaluate the same evidence.
 7. The consensus winner is stored on-chain.
 8. Only that winning researcher can claim the escrowed GEN.
+9. If a bounty remains unfilled, the creator has a guarded refund path instead of leaving GEN permanently locked.
 
 ## Live Studionet evidence
 
 Contract:
-https://explorer-studio.genlayer.com/address/0xb501Af6f93218abDd0001C5Bcb37B800656B77a4
+https://explorer-studio.genlayer.com/address/0x6def481601D1c8A81Ca17F8ad4e02725471a72E7
 
 Address:
-`0xb501Af6f93218abDd0001C5Bcb37B800656B77a4`
+`0x6def481601D1c8A81Ca17F8ad4e02725471a72E7`
 
 Successful full lifecycle:
-https://github.com/maho0638/researcharena-genlayer/actions/runs/35854134127
+https://github.com/maho0638/researcharena-genlayer/actions/runs/35855964117
 
 Create bounty:
-https://explorer-studio.genlayer.com/tx/0x2a85dd5f1eb16178f9cc56109776111f0f0e659bfb732577b1c4b42d76f69cc0
+https://explorer-studio.genlayer.com/tx/0xb006507d076b11f0e6a0b643c7b2672c0db97b5919d5133fab6424f50e352a4d
 
 Primary submission:
-https://explorer-studio.genlayer.com/tx/0x9b35c6136dfedaf20ad45290d833e21deab8d3b0086e13baaf1566125ce60afd
+https://explorer-studio.genlayer.com/tx/0x561c2824cc7a8c01b2d7424dab4e19b1afc3f8c3f9ea64ca6931290979aaad80
 
 Competing submission:
-https://explorer-studio.genlayer.com/tx/0xf01e9dea4771e493980442833e183159cef63c029a0a6a74e30a3f65e69deb1f
+https://explorer-studio.genlayer.com/tx/0xc191928f77a43bc39c1e6f1cdbf274bf9551982f86db610230e06d0db96915c4
 
 Close:
-https://explorer-studio.genlayer.com/tx/0xd44dd40f6fbee25e95cfc303c32a5ddfb780aea1f3422aabd40ddfa35e98b65e
+https://explorer-studio.genlayer.com/tx/0xc5abe1793c4ba359cc9d59cb519be5c117c7b7759f605f328118621842be12ad
 
 Consensus resolution:
-https://explorer-studio.genlayer.com/tx/0x5b883000af40b9e144206ec16d3e2b2aad4e9896f9bd47a680e5f164bf9e8e63
+https://explorer-studio.genlayer.com/tx/0x485135e7c20175db1ddec96c954d1b061e81172609454276f8842348fe4b72f2
 
 Winner reward claim:
-https://explorer-studio.genlayer.com/tx/0x5133f6d8bd122f470285401e1ff7404fdd6f9cbc36fc2b1599a8908c27f27ad1
+https://explorer-studio.genlayer.com/tx/0x22abe8fd863cc4d3a6225881d64ad3d6ca3f8ddc180ec44360bec51ec0986f34
 
 Verified stored result:
 
 - `status = RESOLVED`
 - `winner_submission_id = primary-report`
 - `winning_score = 95`
-- `runner_up_score = 20`
+- `runner_up_score = 25`
 - `reward_claimed = true`
 
 ## Source and tests
