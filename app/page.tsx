@@ -504,7 +504,7 @@ export default function Home() {
               Bounty ID
               <input value={inspectId} onChange={(e) => setInspectId(e.target.value)} />
             </label>
-            <button onClick={loadBounty}>Read state</button>
+            <button onClick={() => void loadBounty()}>Read state</button>
             <button onClick={closeBounty}>Close entries</button>
             <button className="resolve" onClick={resolveBounty}>Resolve by consensus</button>
             <button onClick={claimReward}>Claim winner reward</button>
