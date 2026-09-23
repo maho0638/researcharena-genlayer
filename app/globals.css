@@ -1713,3 +1713,117 @@ button:disabled {
     text-align: center;
   }
 }
+
+
+.marketListHeader {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.marketListHeader h3 {
+  margin: 6px 0 0;
+  font-size: 24px;
+  letter-spacing: -.035em;
+}
+
+.marketListHeader > span {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.marketList {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.marketCard,
+.marketEmpty {
+  min-height: 190px;
+  padding: 18px;
+  border: 1px solid rgba(120, 243, 199, .13);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(13, 28, 23, .84), rgba(7, 17, 14, .92));
+  color: var(--text);
+}
+
+.marketCard {
+  text-align: left;
+  transition: transform .18s ease, border-color .18s ease, background .18s ease;
+}
+
+.marketCard:hover {
+  transform: translateY(-3px);
+  border-color: rgba(216, 255, 99, .27);
+  background: linear-gradient(180deg, rgba(18, 36, 29, .9), rgba(8, 20, 16, .96));
+}
+
+.marketCardTop,
+.marketCardMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.marketCardTop span {
+  color: var(--good);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+
+.marketCardTop small,
+.marketCardMeta {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.marketCard > strong {
+  display: block;
+  margin-top: 18px;
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+
+.marketCard > p {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+  min-height: 50px;
+  margin: 9px 0 18px;
+}
+
+.marketCardMeta {
+  padding-top: 12px;
+  border-top: 1px solid rgba(120, 243, 199, .08);
+}
+
+.marketEmpty {
+  grid-column: 1 / -1;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+@media (max-width: 980px) {
+  .marketList {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .marketList {
+    grid-template-columns: 1fr;
+  }
+
+  .marketListHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
