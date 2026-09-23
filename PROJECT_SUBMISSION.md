@@ -36,13 +36,13 @@ ResearchArena makes GenLayer the settlement layer:
 ## Live Studionet evidence
 
 Contract:
-https://explorer-studio.genlayer.com/address/0x1ca016381CC68dEF3e3028eefdBaDbadf2b80dA2
+https://explorer-studio.genlayer.com/address/0x3877C0a69a42a01c9c6a4708aCca25bA5573814C
 
 Address:
-`0x1ca016381CC68dEF3e3028eefdBaDbadf2b80dA2`
+`0x3877C0a69a42a01c9c6a4708aCca25bA5573814C`
 
 Successful full lifecycle:
-https://github.com/maho0638/researcharena-genlayer/actions/runs/35912412402
+https://github.com/maho0638/researcharena-genlayer/actions/runs/35918043606
 
 Create bounty:
 https://explorer-studio.genlayer.com/tx/0xad4b1139b373a2a56981dcf34455e6da52ecebfa1934054ab7cb3141c9d8d5d5
@@ -66,8 +66,8 @@ Verified stored result:
 
 - `status = RESOLVED`
 - `winner_submission_id = primary-report`
-- `winning_score = 95`
-- `runner_up_score = 20`
+- `winning_score = 98`
+- `runner_up_score = 32`
 - `reason_code = RUBRIC_FIT`
 - `reward_claimed = true`
 
