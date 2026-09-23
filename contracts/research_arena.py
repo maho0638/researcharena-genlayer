@@ -46,6 +46,8 @@ class Submission:
 
 class ResearchArena(gl.Contract):
     bounties: TreeMap[str, Bounty]
+    bounty_index: TreeMap[str, str]
+    bounty_count: u256
     submissions: TreeMap[str, Submission]
     submission_index: TreeMap[str, str]
     participant_keys: TreeMap[str, bool]
@@ -100,6 +102,10 @@ class ResearchArena(gl.Contract):
             raise gl.vm.UserError("max_submissions must be between 2 and 5")
         if int(deadline) <= self._now():
             raise gl.vm.UserError("Deadline must be in the future")
+
+        index = int(self.bounty_count)
+        self.bounty_index[str(index)] = bounty_id
+        self.bounty_count = u256(index + 1)
 
         self.bounties[bounty_id] = Bounty(
             id=bounty_id,
@@ -317,9 +323,18 @@ Return JSON only:
                 if leader_runner > leader_score or validator_runner > validator_score:
                     return False
 
-                if str(leader.get("reason_code", "")) != str(
-                    validator.get("reason_code", "")
-                ):
+                allowed_reasons = (
+                    "DIRECTNESS",
+                    "SOURCE_AUTHORITY",
+                    "INDEPENDENT_CORROBORATION",
+                    "RUBRIC_FIT",
+                    "EVIDENCE_CONSISTENCY",
+                )
+                leader_reason = str(leader.get("reason_code", ""))
+                validator_reason = str(validator.get("reason_code", ""))
+                if leader_reason not in allowed_reasons:
+                    return False
+                if leader_reason != validator_reason:
                     return False
 
                 return (
@@ -408,6 +423,16 @@ Return JSON only:
 
         _Recipient(bounty.creator).emit_transfer(value=reward)
         return reward
+
+    @gl.public.view
+    def get_bounty_count(self) -> u256:
+        return self.bounty_count
+
+    @gl.public.view
+    def get_bounty_id(self, index: u256) -> str:
+        if int(index) >= int(self.bounty_count):
+            raise gl.vm.UserError("Bounty index out of range")
+        return self.bounty_index[str(int(index))]
 
     @gl.public.view
     def get_bounty(self, bounty_id: str) -> Bounty:
