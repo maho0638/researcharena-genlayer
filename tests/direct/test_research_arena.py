@@ -204,6 +204,7 @@ def test_creator_can_refund_empty_bounty(direct_vm, direct_deploy, direct_alice)
         2,
     )
     direct_vm.value = 0
+    direct_vm.deal(direct_vm._contract_address, 1800)
 
     refunded = contract.refund_unfilled_bounty("refund-test")
     bounty = contract.get_bounty("refund-test")
