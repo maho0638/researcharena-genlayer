@@ -96,6 +96,7 @@ export default function Home() {
 
   const [inspectId, setInspectId] = useState("example-domain-research-v1");
   const [bounty, setBounty] = useState<BountyView | null>(null);
+  const [marketBounties, setMarketBounties] = useState<BountyView[]>([]);
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [lastTx, setLastTx] = useState("");
 
@@ -108,7 +109,10 @@ export default function Home() {
   }, [status]);
 
   useEffect(() => {
-    if (deployed) void loadBounty(verifiedDemo.bountyId);
+    if (deployed) {
+      void loadBounty(verifiedDemo.bountyId);
+      void loadMarket();
+    }
   }, []);
 
   async function connectWallet() {
@@ -164,6 +168,7 @@ export default function Home() {
       setInspectId(bountyId);
       setSubmitBountyId(bountyId);
       setStatus("Bounty submitted on GenLayer");
+      await loadMarket();
     } catch (error: any) {
       setStatus(error?.message || "Create bounty failed");
     } finally {
@@ -235,6 +240,7 @@ export default function Home() {
       setLastTx(hash);
       setStatus("Bounty resolved by validator consensus");
       await loadBounty();
+      await loadMarket();
     } catch (error: any) {
       setStatus(error?.message || "Resolve failed");
     } finally {
@@ -255,6 +261,7 @@ export default function Home() {
       setLastTx(hash);
       setStatus("Unfilled bounty refunded");
       await loadBounty();
+      await loadMarket();
     } catch (error: any) {
       setStatus(error?.message || "Refund failed");
     } finally {
@@ -275,10 +282,44 @@ export default function Home() {
       setLastTx(hash);
       setStatus("Winner reward claimed");
       await loadBounty();
+      await loadMarket();
     } catch (error: any) {
       setStatus(error?.message || "Claim failed");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function loadMarket() {
+    if (!deployed) return;
+    try {
+      const client: any = readClient();
+      const countRaw: any = await client.readContract({
+        address: CONTRACT_ADDRESS,
+        functionName: "get_bounty_count",
+        args: [],
+      });
+      const total = Number(countRaw ?? 0);
+      const start = Math.max(0, total - 6);
+      const loaded: BountyView[] = [];
+
+      for (let index = start; index < total; index++) {
+        const id: any = await client.readContract({
+          address: CONTRACT_ADDRESS,
+          functionName: "get_bounty_id",
+          args: [BigInt(index)],
+        });
+        const item: any = await client.readContract({
+          address: CONTRACT_ADDRESS,
+          functionName: "get_bounty",
+          args: [id],
+        });
+        loaded.push(item);
+      }
+
+      setMarketBounties(loaded.reverse());
+    } catch {
+      setMarketBounties([]);
     }
   }
 
@@ -486,6 +527,42 @@ export default function Home() {
             <div className="protocolRow"><span>CI / GenVM</span><strong className="healthy">Passing</strong></div>
             <a className="protocolLink" href={verifiedDemo.workflow} target="_blank" rel="noreferrer">Open verification run ↗</a>
           </aside>
+        </div>
+
+        <div className="marketListHeader">
+          <div>
+            <span className="miniLabel">ON-CHAIN DISCOVERY</span>
+            <h3>Indexed bounties</h3>
+          </div>
+          <span>{marketBounties.length ? String(marketBounties.length) + " loaded" : "Loading markets…"}</span>
+        </div>
+        <div className="marketList">
+          {marketBounties.length ? marketBounties.map((item) => (
+            <button
+              className="marketCard"
+              key={item.id}
+              onClick={() => {
+                if (!item.id) return;
+                setInspectId(item.id);
+                setWorkspaceTab("judge");
+                void loadBounty(item.id);
+                document.getElementById("app")?.scrollIntoView({ behavior: "smooth" });
+              }}
+            >
+              <div className="marketCardTop">
+                <span>{item.status || "UNKNOWN"}</span>
+                <small>{formatGen(item.reward)}</small>
+              </div>
+              <strong>{item.id}</strong>
+              <p>{item.question}</p>
+              <div className="marketCardMeta">
+                <span>{String(item.submission_count ?? 0)} entries</span>
+                <span>{item.winner_submission_id ? "Winner: " + item.winner_submission_id : "Awaiting settlement"}</span>
+              </div>
+            </button>
+          )) : (
+            <div className="marketEmpty">Reading the on-chain bounty index…</div>
+          )}
         </div>
       </section>
 
