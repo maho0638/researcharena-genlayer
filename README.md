@@ -30,18 +30,18 @@ The project is not a chatbot or an LLM wrapper. The consensus result determines 
 
 - **Network:** GenLayer Studionet
 - **Chain ID:** 61999
-- **Contract:** `0x1ca016381CC68dEF3e3028eefdBaDbadf2b80dA2`
-- **Explorer:** https://explorer-studio.genlayer.com/address/0x1ca016381CC68dEF3e3028eefdBaDbadf2b80dA2
-- **Successful full lifecycle workflow:** https://github.com/maho0638/researcharena-genlayer/actions/runs/35912412402
+- **Contract:** `0x3877C0a69a42a01c9c6a4708aCca25bA5573814C`
+- **Explorer:** https://explorer-studio.genlayer.com/address/0x3877C0a69a42a01c9c6a4708aCca25bA5573814C
+- **Successful full lifecycle workflow:** https://github.com/maho0638/researcharena-genlayer/actions/runs/35918043606
 
 ### Real end-to-end transactions
 
-- Create escrowed bounty: https://explorer-studio.genlayer.com/tx/0xad4b1139b373a2a56981dcf34455e6da52ecebfa1934054ab7cb3141c9d8d5d5
-- Submit primary report: https://explorer-studio.genlayer.com/tx/0xbe796ea1d7d3187b3b905897e682edbd4ccd346c5c4a784add109e400484226c
-- Submit competing report: https://explorer-studio.genlayer.com/tx/0xfd6bca0f3dc250372033d63b4b416ee1779e1684d0a9f41a05b4e575d7bae46d
-- Close submissions: https://explorer-studio.genlayer.com/tx/0xb4ff58beec90ce06b20a6bd62fe13845430a2d718823f48527af2ad7088bd6de
-- Resolve by validator consensus: https://explorer-studio.genlayer.com/tx/0x772d1b88fa3b8ef1fca179fa00866b3228a6e9ffa9b5c2f816069bf36cd186b6
-- Winner claims reward: https://explorer-studio.genlayer.com/tx/0xf193bdbb97ac9dae55939065718a07e1b0925cbcdc551d547cf6b6be39b3ef34
+- Create escrowed bounty: https://explorer-studio.genlayer.com/tx/0x926e60299187d2b00106b7b3db49b5983b0f39f9e5cb7803da8187ecacdb52b1
+- Submit primary report: https://explorer-studio.genlayer.com/tx/0xdb1febe4ee75e62840789ba08009be3fc7cf88fdb88801dee0733df5bc8dfeb0
+- Submit competing report: https://explorer-studio.genlayer.com/tx/0x6783c4df8188c817574cc3529bcd67928fa942e64c65c3e280fa73026afefde4
+- Close submissions: https://explorer-studio.genlayer.com/tx/0x8bc3d071e8580b3dd544b358d40b46a30007cc080f1fdd24efbe94238b62b18e
+- Resolve by validator consensus: https://explorer-studio.genlayer.com/tx/0x014a214af5be604a1c4dfd5b825c08facb3d203f661fa4c32983d1ac3e8bda06
+- Winner claims reward: https://explorer-studio.genlayer.com/tx/0x262268fff6d4a0e875ec44119883aeb459528d4279a01d45d471af4b78299e3f
 
 ### Stored result
 
@@ -49,14 +49,14 @@ The live test compared a primary IANA/RFC-backed report against a generic compet
 
 - status: `RESOLVED`
 - winner: `primary-report`
-- winning score: `95/100`
-- runner-up score: `20/100`
+- winning score: `98/100`
+- runner-up score: `32/100`
 - stored structured reason code: `RUBRIC_FIT`
 - reward claimed: `true`
 
 Consensus rationale:
 
-> primary-report won because the report best satisfied the sponsor's precommitted rubric. Score 95/100 vs 20/100.
+> primary-report won because the report best satisfied the sponsor's precommitted rubric. Score 98/100 vs 32/100.
 
 ## Safety and market integrity
 
