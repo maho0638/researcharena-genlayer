@@ -538,18 +538,38 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="workspace">
-        <div className="sectionHeading">
-          <span>RUN THE MARKET</span>
-          <h2>Full transaction lifecycle</h2>
-          <p>
-            The interface calls the Intelligent Contract directly. No off-chain
-            admin decides the winner.
-          </p>
+      <section className="workspace" id="app">
+        <div className="workspaceHeader">
+          <div className="sectionHeading">
+            <span>PROTOCOL WORKSPACE</span>
+            <h2>Run the full transaction lifecycle.</h2>
+            <p>
+              Create, compete and settle through the Intelligent Contract directly.
+              Every write waits for GenLayer finalization before the UI reports success.
+            </p>
+          </div>
+          <div className={"systemStatus workspaceStatus " + statusTone}>
+            <span />
+            {busy ? "Transaction in progress…" : status}
+          </div>
         </div>
 
-        <div className="formsGrid">
-          <form id="create" className="card" onSubmit={createBounty}>
+        <div className="workspaceShell">
+          <div className="workspaceTabs">
+            <button className={workspaceTab === "create" ? "active" : ""} onClick={() => setWorkspaceTab("create")}>
+              <small>01</small><span>Create bounty</span><b>Sponsor</b>
+            </button>
+            <button className={workspaceTab === "submit" ? "active" : ""} onClick={() => setWorkspaceTab("submit")}>
+              <small>02</small><span>Submit research</span><b>Researcher</b>
+            </button>
+            <button className={workspaceTab === "judge" ? "active" : ""} onClick={() => setWorkspaceTab("judge")}>
+              <small>03</small><span>Resolve market</span><b>Consensus</b>
+            </button>
+          </div>
+
+          <div className="workspaceMain">
+            <div className="formsGrid">
+          {workspaceTab === "create" && <form id="create" className="card appCard" onSubmit={createBounty}>
             <div className="cardNumber">01</div>
             <h3>Create an escrowed bounty</h3>
             <p className="cardIntro">
@@ -591,10 +611,11 @@ export default function Home() {
                 </select>
               </label>
             </div>
-            <button className="action" type="submit">Lock GEN & create bounty</button>
-          </form>
+            <div className="formFootnote">Funds remain locked in the Intelligent Contract until consensus settlement or guarded refund.</div>
+            <button className="action" type="submit" disabled={busy}>{busy ? "Processing…" : "Lock GEN & create bounty"}</button>
+          </form>}
 
-          <form id="submit" className="card" onSubmit={submitResearch}>
+          {workspaceTab === "submit" && <form id="submit" className="card appCard" onSubmit={submitResearch}>
             <div className="cardNumber">02</div>
             <h3>Submit a research entry</h3>
             <p className="cardIntro">
@@ -640,11 +661,15 @@ export default function Home() {
                 onChange={(e) => setSource2(e.target.value)}
               />
             </label>
-            <button className="action" type="submit">Enter the research arena</button>
-          </form>
+            <div className="sourceRule">
+              <b>Evidence rule</b>
+              <span>Both evidence URLs must be HTTPS and come from different domains.</span>
+            </div>
+            <button className="action" type="submit" disabled={busy}>{busy ? "Processing…" : "Enter the research arena"}</button>
+          </form>}
         </div>
 
-        <div id="judge" className="judge card">
+        {workspaceTab === "judge" && <div id="judge" className="judge card appCard">
           <div className="judgeHeader">
             <div>
               <div className="cardNumber">03</div>
@@ -665,11 +690,11 @@ export default function Home() {
               Bounty ID
               <input value={inspectId} onChange={(e) => setInspectId(e.target.value)} />
             </label>
-            <button onClick={() => void loadBounty()}>Read state</button>
-            <button onClick={closeBounty}>Close entries</button>
-            <button className="resolve" onClick={resolveBounty}>Resolve by consensus</button>
-            <button onClick={claimReward}>Claim winner reward</button>
-            <button onClick={refundUnfilledBounty}>Refund unfilled</button>
+            <button onClick={() => void loadBounty()} disabled={busy}>Read state</button>
+            <button onClick={closeBounty} disabled={busy}>Close entries</button>
+            <button className="resolve" onClick={resolveBounty} disabled={busy}>Resolve by consensus</button>
+            <button onClick={claimReward} disabled={busy}>Claim winner reward</button>
+            <button onClick={refundUnfilledBounty} disabled={busy}>Refund unfilled</button>
           </div>
 
           {lastTx && (
@@ -725,10 +750,26 @@ export default function Home() {
               )) : <p className="empty">No entries loaded.</p>}
             </div>
           </div>
+        </div>}
+          </div>
         </div>
       </section>
 
-      <section className="why">
+      <section className="rulesSection">
+        <div className="sectionHeading">
+          <span>MARKET GUARDRAILS</span>
+          <h2>Rules that protect the settlement.</h2>
+          <p>These checks are enforced by the contract or mirrored in the frontend before a transaction is sent.</p>
+        </div>
+        <div className="rulesGrid">
+          <article><b>01</b><h3>Escrow first</h3><p>A sponsor cannot create a bounty without locking a positive native GEN reward.</p></article>
+          <article><b>02</b><h3>One entry per wallet</h3><p>Each researcher address gets one submission per bounty, reducing spam and duplicate influence.</p></article>
+          <article><b>03</b><h3>Independent sources</h3><p>Supporting evidence must use separate HTTPS hostnames before it can enter the judging set.</p></article>
+          <article><b>04</b><h3>Consensus before payout</h3><p>The winner, scores and structured reason code must survive validator re-execution before claim.</p></article>
+        </div>
+      </section>
+
+      <section className="why" id="why">
         <div>
           <span className="kicker">WHY GENLAYER IS CENTRAL</span>
           <h2>A normal smart contract cannot do this.</h2>
