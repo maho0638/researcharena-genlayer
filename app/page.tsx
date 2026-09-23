@@ -33,14 +33,14 @@ const explorerBase = "https://explorer-studio.genlayer.com";
 
 const verifiedDemo = {
   bountyId: "example-domain-research-v1",
-  workflow: "https://github.com/maho0638/researcharena-genlayer/actions/runs/35881343633",
+  workflow: "https://github.com/maho0638/researcharena-genlayer/actions/runs/35912412402",
   transactions: [
-    ["Create escrow", "0x2449fde5eb396e2a6e395f294b16a0c8244e5735dbfd8b3f1d885d535aae70ce"],
-    ["Submit primary", "0x88e8580ac40751891dc9ae32f89808b2bda08f8df5c89f1344cada6aaab86445"],
-    ["Submit competitor", "0xa6650fc4c5ca6c16f82444427ed056975e2f9e93ec253ea10a5eaed5abf8b483"],
-    ["Close entries", "0x66e8b7d083112f7fec43577ce11447b15554ed6dae275abb441da38c3de347a3"],
-    ["Resolve consensus", "0xbe2332d2c8db6819ffaae661edfbea023763638e1157852a8c62d7036217cd28"],
-    ["Claim reward", "0x9ccd75dd3d210eaa76ee1ddd3f0e111598ebc7550df0c5c23be08295459db237"],
+    ["Create escrow", "0xad4b1139b373a2a56981dcf34455e6da52ecebfa1934054ab7cb3141c9d8d5d5"],
+    ["Submit primary", "0xbe796ea1d7d3187b3b905897e682edbd4ccd346c5c4a784add109e400484226c"],
+    ["Submit competitor", "0xfd6bca0f3dc250372033d63b4b416ee1779e1684d0a9f41a05b4e575d7bae46d"],
+    ["Close entries", "0xb4ff58beec90ce06b20a6bd62fe13845430a2d718823f48527af2ad7088bd6de"],
+    ["Resolve consensus", "0x772d1b88fa3b8ef1fca179fa00866b3228a6e9ffa9b5c2f816069bf36cd186b6"],
+    ["Claim reward", "0xf193bdbb97ac9dae55939065718a07e1b0925cbcdc551d547cf6b6be39b3ef34"],
   ] as const,
 };
 
