@@ -23,10 +23,14 @@ def test_research_arena_live_flow(default_account, accounts):
 
     print(f"RESEARCH_ARENA_CONTRACT_ADDRESS={contract.address}", flush=True)
 
+    creator_contract = contract.connect(account=default_account)
+    researcher_a_contract = contract.connect(account=accounts[1])
+    researcher_b_contract = contract.connect(account=accounts[2])
+
     bounty_id = "example-domain-research-v1"
     reward = 1_000_000_000_000
 
-    creator_contract = contract.connect(account=default_account)\n    researcher_a_contract = contract.connect(account=accounts[1])\n    researcher_b_contract = contract.connect(account=accounts[2])\n\n    create_tx = creator_contract.create_bounty(
+    create_tx = creator_contract.create_bounty(
         args=[
             bounty_id,
             "Which submitted report most directly and authoritatively establishes that example.com is reserved for documentation examples?",
@@ -35,7 +39,6 @@ def test_research_arena_live_flow(default_account, accounts):
             3,
         ]
     ).transact(
-        account=default_account,
         value=reward,
         wait_interval=10000,
         wait_retries=40,
@@ -52,7 +55,6 @@ def test_research_arena_live_flow(default_account, accounts):
             "https://www.rfc-editor.org/rfc/rfc2606",
         ]
     ).transact(
-        account=accounts[1],
         wait_interval=10000,
         wait_retries=40,
     )
@@ -68,23 +70,20 @@ def test_research_arena_live_flow(default_account, accounts):
             "https://www.rfc-editor.org",
         ]
     ).transact(
-        account=accounts[2],
         wait_interval=10000,
         wait_retries=40,
     )
     assert tx_execution_succeeded(submit_b)
     print(f"RESEARCH_ARENA_SUBMIT_B_TX={submit_b.get('hash', '')}", flush=True)
 
-    close_tx = contract.close_bounty(args=[bounty_id]).transact(
-        account=default_account,
+    close_tx = creator_contract.close_bounty(args=[bounty_id]).transact(
         wait_interval=10000,
         wait_retries=40,
     )
     assert tx_execution_succeeded(close_tx)
     print(f"RESEARCH_ARENA_CLOSE_TX={close_tx.get('hash', '')}", flush=True)
 
-    resolve_tx = contract.resolve_bounty(args=[bounty_id]).transact(
-        account=default_account,
+    resolve_tx = creator_contract.resolve_bounty(args=[bounty_id]).transact(
         consensus_max_rotations=3,
         wait_interval=10000,
         wait_retries=50,
@@ -103,8 +102,7 @@ def test_research_arena_live_flow(default_account, accounts):
     assert str(_field(result, "winner_submission_id")) == "primary-report"
     assert int(_field(result, "winning_score")) >= 70
 
-    claim_tx = contract.claim_reward(args=[bounty_id]).transact(
-        account=accounts[1],
+    claim_tx = researcher_a_contract.claim_reward(args=[bounty_id]).transact(
         wait_interval=10000,
         wait_retries=40,
     )
