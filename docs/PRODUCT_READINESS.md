@@ -9,7 +9,7 @@ ResearchArena is a competitive research bounty market.
 1. A sponsor publishes a natural-language research question and scoring rubric.
 2. Native GEN is escrowed at bounty creation.
 3. Independent researcher wallets submit one report each.
-4. Each submission carries a report URL plus two HTTPS evidence URLs from independent hostnames.
+4. Each submission carries a report URL plus two HTTPS evidence URLs from distinct hostnames; source authority and actual independence are evaluated from the live content.
 5. GenLayer renders the live evidence at settlement time.
 6. The leader evaluates all entries under the sponsor's precommitted rubric.
 7. Validators independently repeat the evidence review.
@@ -44,7 +44,7 @@ ResearchArena puts the settlement-critical judgment inside the Intelligent Contr
 - [x] Native escrow and winner payout
 - [x] Natural-language decision criteria
 - [x] Public evidence fetched by the Intelligent Contract
-- [x] Independent evidence-domain requirement
+- [x] Distinct evidence-host requirement plus live authority/independence judgment
 - [x] Independent validator re-execution
 - [x] Structured consensus fields
 - [x] Deterministic human-readable settlement rationale
@@ -52,6 +52,9 @@ ResearchArena puts the settlement-critical judgment inside the Intelligent Contr
 - [x] One-entry-per-wallet anti-spam rule
 - [x] 2–5 participant cap
 - [x] On-chain bounty discovery index
+- [x] Fair-close rule preventing sponsor truncation before the advertised cap
+- [x] Canonical proof state isolated from workspace navigation
+- [x] Honest RPC failure fallback that never labels cached proof as live
 - [x] Complete frontend transaction lifecycle
 - [x] Client-side preflight validation
 - [x] Read-only verified demo that needs no wallet
