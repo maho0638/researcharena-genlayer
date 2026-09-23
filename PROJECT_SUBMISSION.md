@@ -16,7 +16,7 @@ ResearchArena makes GenLayer the settlement layer:
 
 - live web evidence is fetched at judgment time;
 - an LLM evaluates every competing report under the sponsor's precommitted rubric;
-- validators independently repeat the comparison and must agree on the same winner, bounded winner/runner-up scores, and the exact explicitly requested structured reason code;
+- validators independently repeat the comparison and must agree on the same winner with bounded winner/runner-up scores; both evaluations must also return an allowed structured reason category without requiring brittle exact category equality;
 - consensus fixes the winner, score, runner-up score, and rationale on-chain;
 - the result controls a native GEN reward held by the contract.
 
