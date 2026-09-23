@@ -32,6 +32,7 @@ type BountyView = {
 const explorerBase = "https://explorer-studio.genlayer.com";
 
 const verifiedDemo = {
+  contract: "0x3877C0a69a42a01c9c6a4708aCca25bA5573814C",
   bountyId: "example-domain-research-v1",
   workflow: "https://github.com/maho0638/researcharena-genlayer/actions/runs/35918043606",
   expected: {
@@ -400,6 +401,19 @@ export default function Home() {
 
   const canonicalBounty =
     verifiedBounty || (verifiedProofState === "error" ? verifiedDemo.expected : null);
+
+  const integrityChecks = [
+    ["Contract", CONTRACT_ADDRESS.toLowerCase() === verifiedDemo.contract.toLowerCase()],
+    ["Status", canonicalBounty?.status === verifiedDemo.expected.status],
+    ["Winner", canonicalBounty?.winner_submission_id === verifiedDemo.expected.winner_submission_id],
+    ["Winner score", Number(canonicalBounty?.winning_score ?? -1) === Number(verifiedDemo.expected.winning_score)],
+    ["Runner-up score", Number(canonicalBounty?.runner_up_score ?? -1) === Number(verifiedDemo.expected.runner_up_score)],
+    ["Reason metadata", canonicalBounty?.reason_code === verifiedDemo.expected.reason_code],
+    ["Reward claimed", canonicalBounty?.reward_claimed === verifiedDemo.expected.reward_claimed],
+  ] as const;
+  const integrityPassed = integrityChecks.filter(([, passed]) => passed).length;
+  const integrityComplete = verifiedProofState === "live" && integrityPassed === integrityChecks.length;
+
   const entryCount = Number(bounty?.submission_count ?? 0);
   const entryCap = Number(bounty?.max_submissions ?? 0);
   const deadline = Number(bounty?.deadline ?? 0);
@@ -651,6 +665,28 @@ export default function Home() {
             : verifiedProofState === "error"
               ? "Live RPC unavailable — showing the last verified settlement snapshot; use Explorer and CI proof to audit it"
               : "Verifying the canonical settlement from Studionet…"}
+        </div>
+
+        <div className={"integrityPanel " + (integrityComplete ? "pass" : verifiedProofState === "error" ? "fallback" : "")}>
+          <div className="integrityTop">
+            <div>
+              <span>REVIEWER INTEGRITY GATE</span>
+              <strong>{verifiedProofState === "live" ? `${integrityPassed}/${integrityChecks.length} live checks match` : verifiedProofState === "error" ? "Snapshot shown — live checks unavailable" : "Checking live settlement integrity…"}</strong>
+            </div>
+            <b>{integrityComplete ? "PASS" : verifiedProofState === "error" ? "FALLBACK" : "VERIFYING"}</b>
+          </div>
+          <div className="integrityChecks">
+            {integrityChecks.map(([label, passed]) => (
+              <div key={label}>
+                <i className={verifiedProofState === "live" && passed ? "ok" : ""} />
+                <span>{label}</span>
+                <strong>{verifiedProofState === "live" ? (passed ? "MATCH" : "MISMATCH") : "—"}</strong>
+              </div>
+            ))}
+          </div>
+          <small>
+            A PASS means the live Studionet read matches the pinned reviewer benchmark for contract, settlement result and claimed reward.
+          </small>
         </div>
 
         <div className="proofGrid">
