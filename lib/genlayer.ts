@@ -1,6 +1,6 @@
 "use client";
 
-import { createClient, isSuccessful } from "genlayer-js";
+import { createClient } from "genlayer-js";
 import { studionet } from "genlayer-js/chains";
 
 declare global {
@@ -98,11 +98,16 @@ export async function sendWrite(request: {
     ...(fees ? { fees } : {}),
   });
 
-  const transaction = await client.waitForFinalization({ hash });
+  const receipt = await client.waitForTransactionReceipt({
+    hash,
+    status: "FINALIZED" as any,
+    retries: 48,
+    interval: 5000,
+  });
 
-  if (!isSuccessful(transaction)) {
+  if (receipt?.txExecutionResultName !== "FINISHED_WITH_RETURN") {
     throw new Error(
-      `Transaction did not succeed: ${transaction?.statusName ?? "unknown"} / ${transaction?.txExecutionResultName ?? "unknown"}`
+      `Transaction did not succeed: ${receipt?.statusName ?? "unknown"} / ${receipt?.txExecutionResultName ?? "unknown"}`
     );
   }
 
