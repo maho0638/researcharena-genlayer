@@ -11,9 +11,10 @@ declare global {
   }
 }
 
-export const CONTRACT_ADDRESS = (
-  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "0x1ca016381CC68dEF3e3028eefdBaDbadf2b80dA2"
-) as `0x${string}`;
+// Canonical reviewer deployment. Keep this pinned in source so a stale Vercel
+// environment variable cannot silently point production at an older contract.
+export const CONTRACT_ADDRESS =
+  "0x3877C0a69a42a01c9c6a4708aCca25bA5573814C" as `0x${string}`;
 
 export function readClient() {
   const config: any = { chain: studionet };
@@ -105,7 +106,12 @@ export async function sendWrite(request: {
     interval: 5000,
   });
 
-  if (receipt?.txExecutionResultName !== "FINISHED_WITH_RETURN") {
+  const finalized = String(receipt?.statusName ?? "").toUpperCase() === "FINALIZED";
+  const executed =
+    String(receipt?.txExecutionResultName ?? "").toUpperCase() ===
+    "FINISHED_WITH_RETURN";
+
+  if (!finalized || !executed) {
     throw new Error(
       `Transaction did not succeed: ${receipt?.statusName ?? "unknown"} / ${receipt?.txExecutionResultName ?? "unknown"}`
     );
