@@ -32,6 +32,8 @@ def test_create_bounty_escrows_value(direct_vm, direct_deploy, direct_alice):
     assert bounty.reward == 2500
     assert bounty.status == "OPEN"
     assert bounty.submission_count == 0
+    assert contract.get_bounty_count() == 1
+    assert contract.get_bounty_id(0) == "escrow-test"
 
 
 def test_zero_reward_is_rejected(direct_vm, direct_deploy, direct_alice):
