@@ -258,10 +258,10 @@ export default function Home() {
     <main>
       <nav className="nav">
         <a className="brand" href="#">
-          <span className="mark">RA</span>
+          <img className="brandLogo" src="/researcharena-logo.webp" alt="ResearchArena logo" />
           <span>
             <strong>ResearchArena</strong>
-            <small>GenLayer research market</small>
+            <small>Consensus research market</small>
           </span>
         </a>
         <div className="navLinks">
@@ -276,6 +276,10 @@ export default function Home() {
 
       <section className="hero">
         <div className="heroCopy">
+          <div className="heroEyebrow">
+            <span className="verifiedPill"><i /> LIVE ON STUDIONET</span>
+            <span>Chain 61999 · Native GEN settlement</span>
+          </div>
           <span className="kicker">ESCROW + LIVE WEB + VALIDATOR CONSENSUS</span>
           <h1>
             Pay for the <em>best-supported</em> research, not the loudest answer.
@@ -293,6 +297,14 @@ export default function Home() {
         </div>
 
         <div className="heroPanel">
+          <div className="panelIdentity">
+            <img src="/researcharena-logo.webp" alt="ResearchArena" />
+            <div>
+              <small>RESEARCHARENA PROTOCOL</small>
+              <strong>Evidence-backed settlement</strong>
+            </div>
+            <span className="identitySeal">RA</span>
+          </div>
           <div className="panelTop">
             <span className="pulse" />
             <span>{deployed ? "LIVE ON STUDIONET" : "DEPLOYMENT PENDING"}</span>
@@ -328,6 +340,21 @@ export default function Home() {
         <div><strong>3 URLs</strong><span>report + 2 evidence sources</span></div>
         <div><strong>1 winner</strong><span>consensus-selected</span></div>
         <div><strong>GEN</strong><span>native escrow & payout</span></div>
+      </section>
+
+      <section className="signalGrid">
+        <article>
+          <span className="signalIcon">◎</span>
+          <div><b>Escrowed stake</b><p>Rewards are locked before researchers compete.</p></div>
+        </article>
+        <article>
+          <span className="signalIcon">⌁</span>
+          <div><b>Independent evidence</b><p>Each entry carries public sources from separate domains.</p></div>
+        </article>
+        <article>
+          <span className="signalIcon">✦</span>
+          <div><b>Consensus settlement</b><p>Validators re-check the same live evidence before payout.</p></div>
+        </article>
       </section>
 
       <section className="proofSection" id="proof">
@@ -599,9 +626,12 @@ export default function Home() {
       </section>
 
       <footer>
-        <div>
-          <strong>ResearchArena</strong>
-          <span>Competitive research with on-chain consequences.</span>
+        <div className="footerBrand">
+          <img src="/researcharena-logo.webp" alt="ResearchArena" />
+          <div>
+            <strong>ResearchArena</strong>
+            <span>Competitive research with on-chain consequences.</span>
+          </div>
         </div>
         <div>
           <a href="https://github.com/maho0638/researcharena-genlayer" target="_blank" rel="noreferrer">
