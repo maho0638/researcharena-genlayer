@@ -704,7 +704,7 @@ export default function Home() {
               <div><small>Winner</small><b>{canonicalBounty?.winner_submission_id || "Loading..."}</b></div>
               <div><small>Score</small><b>{canonicalBounty?.winning_score ? `${canonicalBounty.winning_score}/100` : "Loading..."}</b></div>
               <div><small>Runner-up</small><b>{canonicalBounty?.runner_up_score ? `${canonicalBounty.runner_up_score}/100` : "Loading..."}</b></div>
-              <div><small>Agreed reason</small><b>{canonicalBounty?.reason_code || "Loading..."}</b></div>
+              <div><small>Stored reason</small><b>{canonicalBounty?.reason_code || "Loading..."}</b></div>
               <div><small>Reward claimed</small><b>{canonicalBounty ? (canonicalBounty.reward_claimed ? "Yes" : "No") : "Loading..."}</b></div>
             </div>
             {canonicalBounty?.rationale && <blockquote>{canonicalBounty.rationale}</blockquote>}
