@@ -165,6 +165,23 @@ export default function Home() {
     }
   }
 
+  async function refundUnfilledBounty() {
+    if (!deployed) return setStatus("Contract deployment is not configured yet.");
+    try {
+      setStatus("Refunding an unfilled bounty...");
+      const hash = await sendWrite({
+        address: CONTRACT_ADDRESS,
+        functionName: "refund_unfilled_bounty",
+        args: [inspectId],
+      });
+      setLastTx(hash);
+      setStatus("Unfilled bounty refunded");
+      await loadBounty();
+    } catch (error: any) {
+      setStatus(error?.message || "Refund failed");
+    }
+  }
+
   async function claimReward() {
     if (!deployed) return setStatus("Contract deployment is not configured yet.");
     try {
@@ -425,6 +442,7 @@ export default function Home() {
             <button onClick={closeBounty}>Close entries</button>
             <button className="resolve" onClick={resolveBounty}>Resolve by consensus</button>
             <button onClick={claimReward}>Claim winner reward</button>
+            <button onClick={refundUnfilledBounty}>Refund unfilled</button>
           </div>
 
           {lastTx && (

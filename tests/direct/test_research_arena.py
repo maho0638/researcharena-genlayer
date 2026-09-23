@@ -189,3 +189,25 @@ def test_non_creator_cannot_close(
     direct_vm.sender = direct_bob
     with direct_vm.expect_revert("Only the bounty creator"):
         contract.close_bounty("research-1")
+
+
+def test_creator_can_refund_empty_bounty(direct_vm, direct_deploy, direct_alice):
+    direct_vm.sender = direct_alice
+    contract = direct_deploy("contracts/research_arena.py")
+
+    direct_vm.value = 1800
+    contract.create_bounty(
+        "refund-test",
+        "Question",
+        "Rubric",
+        4000000000,
+        2,
+    )
+    direct_vm.value = 0
+
+    refunded = contract.refund_unfilled_bounty("refund-test")
+    bounty = contract.get_bounty("refund-test")
+
+    assert refunded == 1800
+    assert bounty.status == "REFUNDED"
+    assert bounty.reward_claimed is True

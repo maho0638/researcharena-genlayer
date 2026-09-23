@@ -316,6 +316,33 @@ Return JSON only:
         _Recipient(gl.message.sender_address).emit_transfer(value=reward)
         return reward
 
+    @gl.public.write
+    def refund_unfilled_bounty(self, bounty_id: str) -> u256:
+        if bounty_id not in self.bounties:
+            raise gl.vm.UserError("Bounty not found")
+
+        bounty = self.bounties[bounty_id]
+
+        if gl.message.sender_address != bounty.creator:
+            raise gl.vm.UserError("Only the bounty creator can refund")
+        if bounty.status != "OPEN":
+            raise gl.vm.UserError("Bounty is not open")
+        if bounty.reward_claimed:
+            raise gl.vm.UserError("Reward already settled")
+        if int(bounty.submission_count) >= 2:
+            raise gl.vm.UserError("Bounty has enough submissions to resolve")
+        if int(bounty.submission_count) == 1 and self._now() <= int(bounty.deadline):
+            raise gl.vm.UserError("Wait for the deadline when one submission exists")
+        if self.balance < bounty.reward:
+            raise gl.vm.UserError("Contract balance is insufficient")
+
+        reward = bounty.reward
+        bounty.status = "REFUNDED"
+        bounty.reward_claimed = True
+
+        _Recipient(bounty.creator).emit_transfer(value=reward)
+        return reward
+
     @gl.public.view
     def get_bounty(self, bounty_id: str) -> Bounty:
         if bounty_id not in self.bounties:
