@@ -3,6 +3,7 @@
 import pytest
 from gltest import get_contract_factory
 from gltest.assertions import tx_execution_succeeded
+from gltest.types import TransactionStatus
 
 
 def _field(value, name):
@@ -103,8 +104,11 @@ def test_research_arena_live_flow(default_account, accounts):
     assert int(_field(result, "winning_score")) >= 70
 
     claim_tx = researcher_a_contract.claim_reward(args=[bounty_id]).transact(
+        wait_until="finalized",
+        wait_triggered_transactions=True,
+        wait_triggered_transactions_status=TransactionStatus.FINALIZED,
         wait_interval=10000,
-        wait_retries=40,
+        wait_retries=50,
     )
     assert tx_execution_succeeded(claim_tx)
     print(f"RESEARCH_ARENA_CLAIM_TX={claim_tx.get('hash', '')}", flush=True)
@@ -112,3 +116,4 @@ def test_research_arena_live_flow(default_account, accounts):
     claimed = contract.get_bounty(args=[bounty_id]).call()
     assert bool(_field(claimed, "reward_claimed")) is True
     print("RESEARCH_ARENA_REWARD_CLAIMED=true", flush=True)
+    print("RESEARCH_ARENA_PAYOUT_FINALIZED=true", flush=True)
