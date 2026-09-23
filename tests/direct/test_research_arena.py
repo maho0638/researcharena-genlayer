@@ -148,7 +148,7 @@ def test_consensus_selects_stronger_research(
                 "winner_id": "primary-report",
                 "winner_score": 96,
                 "runner_up_score": 41,
-                "rationale": "Primary report directly answers the question with two authoritative independent sources.",
+                "reason_code": "SOURCE_AUTHORITY",
             }
         ),
     )
@@ -161,6 +161,8 @@ def test_consensus_selects_stronger_research(
     assert str(bounty.winner).lower() == "0x" + direct_bob.hex()
     assert bounty.winning_score == 96
     assert bounty.runner_up_score == 41
+    assert bounty.reason_code == "SOURCE_AUTHORITY"
+    assert "authoritative evidence" in bounty.rationale
 
 
 def test_non_creator_cannot_close(
@@ -212,3 +214,20 @@ def test_creator_can_refund_empty_bounty(direct_vm, direct_deploy, direct_alice)
     assert refunded == 1800
     assert bounty.status == "REFUNDED"
     assert bounty.reward_claimed is True
+
+
+def test_same_source_domain_is_rejected(
+    direct_vm, direct_deploy, direct_alice, direct_bob
+):
+    contract = direct_deploy("contracts/research_arena.py")
+    create_demo_bounty(direct_vm, contract, direct_alice)
+
+    direct_vm.sender = direct_bob
+    with direct_vm.expect_revert("independent domains"):
+        contract.submit_research(
+            "research-1",
+            "same-domain",
+            "https://report.example/research",
+            "https://example.com/source-a",
+            "https://www.example.com/source-b",
+        )

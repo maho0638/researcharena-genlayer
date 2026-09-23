@@ -24,6 +24,7 @@ type BountyView = {
   winner?: string;
   winning_score?: string | number | bigint;
   runner_up_score?: string | number | bigint;
+  reason_code?: string;
   rationale?: string;
   reward_claimed?: boolean;
 };
@@ -355,6 +356,7 @@ export default function Home() {
               <div><small>Winner</small><b>{bounty?.winner_submission_id || "Loading..."}</b></div>
               <div><small>Score</small><b>{bounty?.winning_score ? `${bounty.winning_score}/100` : "Loading..."}</b></div>
               <div><small>Runner-up</small><b>{bounty?.runner_up_score ? `${bounty.runner_up_score}/100` : "Loading..."}</b></div>
+              <div><small>Agreed reason</small><b>{bounty?.reason_code || "Loading..."}</b></div>
               <div><small>Reward claimed</small><b>{bounty?.reward_claimed ? "Yes" : "Loading..."}</b></div>
             </div>
             {bounty?.rationale && <blockquote>{bounty.rationale}</blockquote>}

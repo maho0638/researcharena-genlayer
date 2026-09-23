@@ -96,6 +96,7 @@ def test_research_arena_live_flow(default_account, accounts):
     print(f"RESEARCH_ARENA_WINNER_ID={_field(result, 'winner_submission_id')}", flush=True)
     print(f"RESEARCH_ARENA_WINNING_SCORE={_field(result, 'winning_score')}", flush=True)
     print(f"RESEARCH_ARENA_RUNNER_UP_SCORE={_field(result, 'runner_up_score')}", flush=True)
+    print(f"RESEARCH_ARENA_REASON_CODE={_field(result, 'reason_code')}", flush=True)
     print(f"RESEARCH_ARENA_RATIONALE={_field(result, 'rationale')}", flush=True)
 
     assert str(_field(result, "status")) == "RESOLVED"

@@ -9,7 +9,7 @@
 - sponsor cannot enter their own bounty;
 - duplicate submission IDs rejected;
 - all evidence URLs must use HTTPS;
-- the two supporting evidence URLs must be different;
+- the two supporting evidence URLs must be different and use independent hostnames;
 - question, rubric, IDs, URLs, and stored rationale are length-bounded.
 
 ## Prompt-injection resistance
@@ -23,7 +23,9 @@ The validator independently repeats web retrieval and evaluation. Acceptance req
 - the same winning submission ID;
 - winner score agreement within a bounded tolerance;
 - runner-up score agreement within a bounded tolerance;
-- runner-up score cannot exceed winner score.
+- runner-up score cannot exceed winner score;
+- the settlement reason code must match exactly across leader and validator;
+- the displayed rationale is deterministically composed from agreed settlement fields rather than storing unconstrained leader prose.
 
 ## Funds safety
 

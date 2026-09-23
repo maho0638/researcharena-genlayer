@@ -29,6 +29,7 @@ class Bounty:
     winner: Address
     winning_score: u256
     runner_up_score: u256
+    reason_code: str
     rationale: str
     reward_claimed: bool
 
@@ -63,6 +64,12 @@ class ResearchArena(gl.Contract):
 
     def _participant_key(self, bounty_id: str, researcher: Address) -> str:
         return bounty_id + ":" + str(researcher)
+
+    def _hostname(self, url: str) -> str:
+        host = url[len("https://"):].split("/", 1)[0].split(":", 1)[0].lower()
+        if host.startswith("www."):
+            host = host[4:]
+        return host
 
     @gl.public.write.payable
     def create_bounty(
@@ -108,6 +115,7 @@ class ResearchArena(gl.Contract):
             winner=Address(b"\x00" * 20),
             winning_score=u256(0),
             runner_up_score=u256(0),
+            reason_code="",
             rationale="",
             reward_claimed=False,
         )
@@ -152,6 +160,9 @@ class ResearchArena(gl.Contract):
 
         if source_url_1 == source_url_2:
             raise gl.vm.UserError("Evidence sources must be different")
+
+        if self._hostname(source_url_1) == self._hostname(source_url_2):
+            raise gl.vm.UserError("Evidence sources must use independent domains")
 
         key = self._submission_key(bounty_id, submission_id)
         if key in self.submissions:
@@ -268,11 +279,22 @@ Return JSON only:
             if runner_up_score > winner_score:
                 runner_up_score = winner_score
 
+            allowed_reasons = (
+                "DIRECTNESS",
+                "SOURCE_AUTHORITY",
+                "INDEPENDENT_CORROBORATION",
+                "RUBRIC_FIT",
+                "EVIDENCE_CONSISTENCY",
+            )
+            reason_code = str(result.get("reason_code", "RUBRIC_FIT")).upper()
+            if reason_code not in allowed_reasons:
+                reason_code = "RUBRIC_FIT"
+
             return {
                 "winner_id": winner_id,
                 "winner_score": winner_score,
                 "runner_up_score": runner_up_score,
-                "rationale": str(result.get("rationale", ""))[:300],
+                "reason_code": reason_code,
             }
 
         def validator_fn(leader_result) -> bool:
@@ -295,6 +317,11 @@ Return JSON only:
                 if leader_runner > leader_score or validator_runner > validator_score:
                     return False
 
+                if str(leader.get("reason_code", "")) != str(
+                    validator.get("reason_code", "")
+                ):
+                    return False
+
                 return (
                     abs(leader_score - validator_score) <= 12
                     and abs(leader_runner - validator_runner) <= 12
@@ -313,7 +340,28 @@ Return JSON only:
         bounty.winner = winner_submission.researcher
         bounty.winning_score = u256(max(0, min(100, int(result.get("winner_score", 0)))))
         bounty.runner_up_score = u256(max(0, min(100, int(result.get("runner_up_score", 0)))))
-        bounty.rationale = str(result.get("rationale", ""))[:300]
+        bounty.reason_code = str(result.get("reason_code", "RUBRIC_FIT"))
+
+        reason_text = {
+            "DIRECTNESS": "the report answered the research question most directly",
+            "SOURCE_AUTHORITY": "the report relied on the strongest authoritative evidence",
+            "INDEPENDENT_CORROBORATION": "the report had the strongest independent corroboration",
+            "RUBRIC_FIT": "the report best satisfied the sponsor's precommitted rubric",
+            "EVIDENCE_CONSISTENCY": "the report had the most internally consistent evidence",
+        }
+        bounty.rationale = (
+            winner_id
+            + " won because "
+            + reason_text.get(
+                bounty.reason_code,
+                "it best satisfied the sponsor's precommitted rubric",
+            )
+            + ". Score "
+            + str(int(bounty.winning_score))
+            + "/100 vs "
+            + str(int(bounty.runner_up_score))
+            + "/100."
+        )[:300]
 
     @gl.public.write
     def claim_reward(self, bounty_id: str) -> u256:

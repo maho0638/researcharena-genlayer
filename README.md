@@ -66,9 +66,9 @@ Consensus rationale:
 - bounty creator cannot compete in their own bounty
 - three public HTTPS URLs per entry: report + two evidence sources
 - duplicate submission IDs rejected
-- the two evidence URLs must be distinct
+- the two evidence URLs must be distinct and come from independent hostnames
 - webpage content is explicitly treated as untrusted input
-- validators independently recompute the winner and both settlement scores
+- validators independently recompute the winner, both settlement scores, and an exact structured reason code
 - reward claim is restricted to the stored winner
 - claim state is updated before the external transfer
 - unfilled bounties have a creator-only refund path; with one entry, refund requires the deadline to pass
@@ -77,7 +77,7 @@ Consensus rationale:
 
 The repository includes:
 
-- seven direct contract tests
+- eight direct contract tests
 - GenVM lint and validation
 - Next.js production build
 - live Studionet end-to-end integration workflow
