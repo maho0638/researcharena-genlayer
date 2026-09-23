@@ -10,25 +10,26 @@ Expected stored result:
 
 - status: `RESOLVED`
 - winner: `primary-report`
-- winning score: `95/100`
-- runner-up score: `25/100`
+- winning score: `92/100`
+- runner-up score: `18/100`
+- reason code: `RUBRIC_FIT`
 - reward claimed: `true`
 
 ## 2. Verify the contract
 
 Contract address:
 
-`0x6def481601D1c8A81Ca17F8ad4e02725471a72E7`
+`0x4c52bAEd4C5562864768BEd411804e56208D4347`
 
 Explorer:
 
-https://explorer-studio.genlayer.com/address/0x6def481601D1c8A81Ca17F8ad4e02725471a72E7
+https://explorer-studio.genlayer.com/address/0x4c52bAEd4C5562864768BEd411804e56208D4347
 
 ## 3. Verify the complete economic lifecycle
 
 Successful workflow:
 
-https://github.com/maho0638/researcharena-genlayer/actions/runs/35855964117
+https://github.com/maho0638/researcharena-genlayer/actions/runs/35881343633
 
 The run performs:
 
