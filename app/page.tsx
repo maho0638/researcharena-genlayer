@@ -54,9 +54,28 @@ function toTimestamp(hours: number) {
   return BigInt(Math.floor(Date.now() / 1000) + hours * 3600);
 }
 
+function isHttpsUrl(value: string) {
+  try {
+    return new URL(value).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function hostOf(value: string) {
+  try {
+    return new URL(value).hostname.replace(/^www\./, "").toLowerCase();
+  } catch {
+    return "";
+  }
+}
+
 export default function Home() {
   const [account, setAccount] = useState("");
   const [status, setStatus] = useState("Ready");
+  const [busy, setBusy] = useState(false);
+  const [workspaceTab, setWorkspaceTab] = useState<"create" | "submit" | "judge">("judge");
+  const [copiedContract, setCopiedContract] = useState(false);
 
   const [bountyId, setBountyId] = useState("research-demo-1");
   const [question, setQuestion] = useState(
@@ -94,20 +113,40 @@ export default function Home() {
 
   async function connectWallet() {
     try {
+      setBusy(true);
       setStatus("Connecting wallet...");
       const { account: selected } = await walletClient();
       setAccount(selected);
       setStatus("Wallet connected");
     } catch (error: any) {
       setStatus(error?.message || "Wallet connection failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function copyContract() {
+    try {
+      await navigator.clipboard.writeText(CONTRACT_ADDRESS);
+      setCopiedContract(true);
+      setTimeout(() => setCopiedContract(false), 1800);
+    } catch {
+      setStatus("Could not copy contract address");
     }
   }
 
   async function createBounty(event: FormEvent) {
     event.preventDefault();
     if (!deployed) return setStatus("Contract deployment is not configured yet.");
+    if (!bountyId.trim() || !question.trim() || !rubric.trim()) {
+      return setStatus("Bounty ID, question and scoring rubric are required.");
+    }
+    if (Number(reward) <= 0 || Number(hours) <= 0) {
+      return setStatus("Reward and deadline must be greater than zero.");
+    }
 
     try {
+      setBusy(true);
       setStatus("Creating escrowed research bounty...");
       const hash = await sendWrite({
         address: CONTRACT_ADDRESS,
@@ -127,14 +166,26 @@ export default function Home() {
       setStatus("Bounty submitted on GenLayer");
     } catch (error: any) {
       setStatus(error?.message || "Create bounty failed");
+    } finally {
+      setBusy(false);
     }
   }
 
   async function submitResearch(event: FormEvent) {
     event.preventDefault();
     if (!deployed) return setStatus("Contract deployment is not configured yet.");
+    if (!submitBountyId.trim() || !submissionId.trim()) {
+      return setStatus("Bounty ID and submission ID are required.");
+    }
+    if (![reportUrl, source1, source2].every(isHttpsUrl)) {
+      return setStatus("Report and both evidence links must use HTTPS.");
+    }
+    if (hostOf(source1) === hostOf(source2)) {
+      return setStatus("Primary and independent evidence must use different domains.");
+    }
 
     try {
+      setBusy(true);
       setStatus("Submitting research evidence...");
       const hash = await sendWrite({
         address: CONTRACT_ADDRESS,
@@ -146,12 +197,15 @@ export default function Home() {
       setStatus("Research submission accepted");
     } catch (error: any) {
       setStatus(error?.message || "Submit research failed");
+    } finally {
+      setBusy(false);
     }
   }
 
   async function closeBounty() {
     if (!deployed) return setStatus("Contract deployment is not configured yet.");
     try {
+      setBusy(true);
       setStatus("Closing submissions...");
       const hash = await sendWrite({
         address: CONTRACT_ADDRESS,
@@ -163,12 +217,15 @@ export default function Home() {
       await loadBounty();
     } catch (error: any) {
       setStatus(error?.message || "Close failed");
+    } finally {
+      setBusy(false);
     }
   }
 
   async function resolveBounty() {
     if (!deployed) return setStatus("Contract deployment is not configured yet.");
     try {
+      setBusy(true);
       setStatus("Validators are evaluating live evidence...");
       const hash = await sendWrite({
         address: CONTRACT_ADDRESS,
@@ -180,12 +237,15 @@ export default function Home() {
       await loadBounty();
     } catch (error: any) {
       setStatus(error?.message || "Resolve failed");
+    } finally {
+      setBusy(false);
     }
   }
 
   async function refundUnfilledBounty() {
     if (!deployed) return setStatus("Contract deployment is not configured yet.");
     try {
+      setBusy(true);
       setStatus("Refunding an unfilled bounty...");
       const hash = await sendWrite({
         address: CONTRACT_ADDRESS,
@@ -197,12 +257,15 @@ export default function Home() {
       await loadBounty();
     } catch (error: any) {
       setStatus(error?.message || "Refund failed");
+    } finally {
+      setBusy(false);
     }
   }
 
   async function claimReward() {
     if (!deployed) return setStatus("Contract deployment is not configured yet.");
     try {
+      setBusy(true);
       setStatus("Claiming escrowed GEN reward...");
       const hash = await sendWrite({
         address: CONTRACT_ADDRESS,
@@ -214,6 +277,8 @@ export default function Home() {
       await loadBounty();
     } catch (error: any) {
       setStatus(error?.message || "Claim failed");
+    } finally {
+      setBusy(false);
     }
   }
 
