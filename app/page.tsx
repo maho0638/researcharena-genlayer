@@ -38,6 +38,8 @@ const verifiedDemo = {
     id: "example-domain-research-v1",
     question: "Which submitted report most directly and authoritatively establishes that example.com is reserved for documentation examples?",
     status: "RESOLVED",
+    max_submissions: 2,
+    submission_count: 2,
     winner_submission_id: "primary-report",
     winning_score: 95,
     runner_up_score: 20,
