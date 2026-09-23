@@ -26,7 +26,7 @@ def test_research_arena_live_flow(default_account, accounts):
     bounty_id = "example-domain-research-v1"
     reward = 1_000_000_000_000
 
-    create_tx = contract.create_bounty(
+    creator_contract = contract.connect(account=default_account)\n    researcher_a_contract = contract.connect(account=accounts[1])\n    researcher_b_contract = contract.connect(account=accounts[2])\n\n    create_tx = creator_contract.create_bounty(
         args=[
             bounty_id,
             "Which submitted report most directly and authoritatively establishes that example.com is reserved for documentation examples?",
@@ -43,7 +43,7 @@ def test_research_arena_live_flow(default_account, accounts):
     assert tx_execution_succeeded(create_tx)
     print(f"RESEARCH_ARENA_CREATE_TX={create_tx.get('hash', '')}", flush=True)
 
-    submit_a = contract.submit_research(
+    submit_a = researcher_a_contract.submit_research(
         args=[
             bounty_id,
             "primary-report",
@@ -59,7 +59,7 @@ def test_research_arena_live_flow(default_account, accounts):
     assert tx_execution_succeeded(submit_a)
     print(f"RESEARCH_ARENA_SUBMIT_A_TX={submit_a.get('hash', '')}", flush=True)
 
-    submit_b = contract.submit_research(
+    submit_b = researcher_b_contract.submit_research(
         args=[
             bounty_id,
             "generic-report",
