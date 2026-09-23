@@ -45,22 +45,22 @@ Successful full lifecycle:
 https://github.com/maho0638/researcharena-genlayer/actions/runs/35918043606
 
 Create bounty:
-https://explorer-studio.genlayer.com/tx/0xad4b1139b373a2a56981dcf34455e6da52ecebfa1934054ab7cb3141c9d8d5d5
+https://explorer-studio.genlayer.com/tx/0x926e60299187d2b00106b7b3db49b5983b0f39f9e5cb7803da8187ecacdb52b1
 
 Primary submission:
-https://explorer-studio.genlayer.com/tx/0xbe796ea1d7d3187b3b905897e682edbd4ccd346c5c4a784add109e400484226c
+https://explorer-studio.genlayer.com/tx/0xdb1febe4ee75e62840789ba08009be3fc7cf88fdb88801dee0733df5bc8dfeb0
 
 Competing submission:
-https://explorer-studio.genlayer.com/tx/0xfd6bca0f3dc250372033d63b4b416ee1779e1684d0a9f41a05b4e575d7bae46d
+https://explorer-studio.genlayer.com/tx/0x6783c4df8188c817574cc3529bcd67928fa942e64c65c3e280fa73026afefde4
 
 Close:
-https://explorer-studio.genlayer.com/tx/0xb4ff58beec90ce06b20a6bd62fe13845430a2d718823f48527af2ad7088bd6de
+https://explorer-studio.genlayer.com/tx/0x8bc3d071e8580b3dd544b358d40b46a30007cc080f1fdd24efbe94238b62b18e
 
 Consensus resolution:
-https://explorer-studio.genlayer.com/tx/0x772d1b88fa3b8ef1fca179fa00866b3228a6e9ffa9b5c2f816069bf36cd186b6
+https://explorer-studio.genlayer.com/tx/0x014a214af5be604a1c4dfd5b825c08facb3d203f661fa4c32983d1ac3e8bda06
 
 Winner reward claim:
-https://explorer-studio.genlayer.com/tx/0xf193bdbb97ac9dae55939065718a07e1b0925cbcdc551d547cf6b6be39b3ef34
+https://explorer-studio.genlayer.com/tx/0x262268fff6d4a0e875ec44119883aeb459528d4279a01d45d471af4b78299e3f
 
 Verified stored result:
 

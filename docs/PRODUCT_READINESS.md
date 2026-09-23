@@ -63,6 +63,7 @@ ResearchArena puts the settlement-critical judgment inside the Intelligent Contr
 - [x] Live Studionet end-to-end deployment test
 - [x] Production deployment on Vercel
 - [x] Reviewer documentation
+- [x] Reviewer integrity gate comparing live contract state against the pinned benchmark
 
 ## Settlement invariants
 

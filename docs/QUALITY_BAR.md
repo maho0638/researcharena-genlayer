@@ -17,6 +17,7 @@ ResearchArena is intentionally mapped to the current Project review criteria.
 | Marketplace discovery | The Intelligent Contract exposes bounty count/index views so clients can enumerate markets on-chain instead of relying on a centralized index. | `get_bounty_count`, `get_bounty_id`, and the production market cards. |
 | Fair market closure | A sponsor cannot selectively truncate an advertised market before the deadline unless the declared entry cap is full. | `close_bounty` guard + direct tests + disabled close action in the UI. |
 | Reviewer-proof isolation | The canonical verified settlement has its own state, independent from whichever market a user opens in the workspace. RPC failure falls back to a clearly labeled last-verified snapshot instead of pretending cached data is live. | Production frontend verified-proof state and failure mode. |
+| Reviewer integrity gate | The production UI automatically compares the live Studionet result against the pinned reviewer benchmark for contract, status, winner, scores, reason metadata and claimed reward. | `7/7 PASS` is shown only when all live checks match. |
 
 ## Verified final benchmark
 

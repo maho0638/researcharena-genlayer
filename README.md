@@ -80,7 +80,7 @@ Consensus rationale:
 
 The repository includes:
 
-- eight direct contract tests
+- nine direct contract tests
 - GenVM lint and validation
 - Next.js production build
 - live Studionet end-to-end integration workflow
