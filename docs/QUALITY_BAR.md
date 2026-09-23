@@ -20,12 +20,12 @@ ResearchArena is intentionally mapped to the current Project review criteria.
 
 ## Verified final benchmark
 
-- Contract: `0x1ca016381CC68dEF3e3028eefdBaDbadf2b80dA2`
-- Workflow: https://github.com/maho0638/researcharena-genlayer/actions/runs/35912412402
+- Contract: `0x3877C0a69a42a01c9c6a4708aCca25bA5573814C`
+- Workflow: https://github.com/maho0638/researcharena-genlayer/actions/runs/35918043606
 - Status: `RESOLVED`
 - Winner: `primary-report`
-- Score: `95/100`
-- Runner-up: `20/100`
+- Score: `98/100`
+- Runner-up: `32/100`
 - Stored reason code: `RUBRIC_FIT`
 - Reward claimed: `true`
 
