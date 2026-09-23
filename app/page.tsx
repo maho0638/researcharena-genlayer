@@ -330,10 +330,12 @@ export default function Home() {
           </span>
         </a>
         <div className="navLinks">
-          <a href="#create">Create</a>
-          <a href="#submit">Compete</a>
-          <a href="#judge">Judge</a>
-          <button className="wallet" onClick={connectWallet}>
+          <a href="#market">Market</a>
+          <a href="#proof">Live proof</a>
+          <a href="#app">Workspace</a>
+          <a href="#why">Why GenLayer</a>
+          <button className="wallet" onClick={connectWallet} disabled={busy}>
+            <span className="walletDot" />
             {account ? short(account) : "Connect wallet"}
           </button>
         </div>
@@ -356,8 +358,13 @@ export default function Home() {
             settles the bounty to the consensus-selected winner.
           </p>
           <div className="heroActions">
-            <a className="primaryCta" href="#create">Launch a bounty</a>
-            <a className="ghostCta" href="#judge">Inspect live proof</a>
+            <a className="primaryCta" href="#app" onClick={() => setWorkspaceTab("create")}>Launch a bounty</a>
+            <a className="ghostCta" href="#proof">Inspect verified settlement</a>
+          </div>
+          <div className="heroTrust">
+            <span>✓ Escrow before competition</span>
+            <span>✓ Independent evidence domains</span>
+            <span>✓ Validator re-execution</span>
           </div>
         </div>
 
@@ -420,6 +427,66 @@ export default function Home() {
           <span className="signalIcon">✦</span>
           <div><b>Consensus settlement</b><p>Validators re-check the same live evidence before payout.</p></div>
         </article>
+      </section>
+
+      <section className="marketSection" id="market">
+        <div className="marketHeader">
+          <div className="sectionHeading">
+            <span>LIVE MARKET</span>
+            <h2>One market. One auditable winner.</h2>
+            <p>
+              ResearchArena turns a subjective research brief into an escrowed,
+              evidence-backed market that anyone can inspect on-chain.
+            </p>
+          </div>
+          <div className="networkBadge">
+            <span className="pulse" />
+            Studionet operational
+            <b>61999</b>
+          </div>
+        </div>
+
+        <div className="marketBoard">
+          <article className="featuredBounty">
+            <div className="featuredTop">
+              <div>
+                <span className="miniLabel">VERIFIED BOUNTY</span>
+                <h3>{verifiedDemo.bountyId}</h3>
+              </div>
+              <span className={"badge " + String(bounty?.status || "loading").toLowerCase()}>
+                {bounty?.status || "Loading"}
+              </span>
+            </div>
+            <p className="featuredQuestion">
+              {bounty?.question || "Loading the canonical on-chain benchmark..."}
+            </p>
+            <div className="featuredMetrics">
+              <div><small>Entries</small><strong>{String(bounty?.submission_count ?? "—")}</strong></div>
+              <div><small>Winner</small><strong>{bounty?.winner_submission_id || "—"}</strong></div>
+              <div><small>Score</small><strong>{bounty?.winning_score ? String(bounty.winning_score) + "/100" : "—"}</strong></div>
+              <div><small>Reason</small><strong>{bounty?.reason_code || "—"}</strong></div>
+            </div>
+            <div className="featuredActions">
+              <a href="#proof">Audit settlement</a>
+              <button onClick={() => { setWorkspaceTab("judge"); document.getElementById("app")?.scrollIntoView({ behavior: "smooth" }); }}>
+                Open in workspace
+              </button>
+            </div>
+          </article>
+
+          <aside className="protocolPanel">
+            <div className="protocolHeader">
+              <span>Protocol health</span>
+              <b>VERIFIED</b>
+            </div>
+            <div className="protocolRow"><span>Contract</span><code>{short(CONTRACT_ADDRESS)}</code></div>
+            <div className="protocolRow"><span>Consensus</span><strong>Independent re-check</strong></div>
+            <div className="protocolRow"><span>Evidence rule</span><strong>2 independent hosts</strong></div>
+            <div className="protocolRow"><span>Economic action</span><strong>GEN escrow → winner</strong></div>
+            <div className="protocolRow"><span>CI / GenVM</span><strong className="healthy">Passing</strong></div>
+            <a className="protocolLink" href={verifiedDemo.workflow} target="_blank" rel="noreferrer">Open verification run ↗</a>
+          </aside>
+        </div>
       </section>
 
       <section className="proofSection" id="proof">
