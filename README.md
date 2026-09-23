@@ -30,18 +30,18 @@ The project is not a chatbot or an LLM wrapper. The consensus result determines 
 
 - **Network:** GenLayer Studionet
 - **Chain ID:** 61999
-- **Contract:** `0xb501Af6f93218abDd0001C5Bcb37B800656B77a4`
-- **Explorer:** https://explorer-studio.genlayer.com/address/0xb501Af6f93218abDd0001C5Bcb37B800656B77a4
-- **Successful full lifecycle workflow:** https://github.com/maho0638/researcharena-genlayer/actions/runs/35854134127
+- **Contract:** `0x6def481601D1c8A81Ca17F8ad4e02725471a72E7`
+- **Explorer:** https://explorer-studio.genlayer.com/address/0x6def481601D1c8A81Ca17F8ad4e02725471a72E7
+- **Successful full lifecycle workflow:** https://github.com/maho0638/researcharena-genlayer/actions/runs/35855964117
 
 ### Real end-to-end transactions
 
-- Create escrowed bounty: https://explorer-studio.genlayer.com/tx/0x2a85dd5f1eb16178f9cc56109776111f0f0e659bfb732577b1c4b42d76f69cc0
-- Submit primary report: https://explorer-studio.genlayer.com/tx/0x9b35c6136dfedaf20ad45290d833e21deab8d3b0086e13baaf1566125ce60afd
-- Submit competing report: https://explorer-studio.genlayer.com/tx/0xf01e9dea4771e493980442833e183159cef63c029a0a6a74e30a3f65e69deb1f
-- Close submissions: https://explorer-studio.genlayer.com/tx/0xd44dd40f6fbee25e95cfc303c32a5ddfb780aea1f3422aabd40ddfa35e98b65e
-- Resolve by validator consensus: https://explorer-studio.genlayer.com/tx/0x5b883000af40b9e144206ec16d3e2b2aad4e9896f9bd47a680e5f164bf9e8e63
-- Winner claims reward: https://explorer-studio.genlayer.com/tx/0x5133f6d8bd122f470285401e1ff7404fdd6f9cbc36fc2b1599a8908c27f27ad1
+- Create escrowed bounty: https://explorer-studio.genlayer.com/tx/0xb006507d076b11f0e6a0b643c7b2672c0db97b5919d5133fab6424f50e352a4d
+- Submit primary report: https://explorer-studio.genlayer.com/tx/0x561c2824cc7a8c01b2d7424dab4e19b1afc3f8c3f9ea64ca6931290979aaad80
+- Submit competing report: https://explorer-studio.genlayer.com/tx/0xc191928f77a43bc39c1e6f1cdbf274bf9551982f86db610230e06d0db96915c4
+- Close submissions: https://explorer-studio.genlayer.com/tx/0xc5abe1793c4ba359cc9d59cb519be5c117c7b7759f605f328118621842be12ad
+- Resolve by validator consensus: https://explorer-studio.genlayer.com/tx/0x485135e7c20175db1ddec96c954d1b061e81172609454276f8842348fe4b72f2
+- Winner claims reward: https://explorer-studio.genlayer.com/tx/0x22abe8fd863cc4d3a6225881d64ad3d6ca3f8ddc180ec44360bec51ec0986f34
 
 ### Stored result
 
@@ -50,12 +50,12 @@ The live test compared a primary IANA/RFC-backed report against a generic compet
 - status: `RESOLVED`
 - winner: `primary-report`
 - winning score: `95/100`
-- runner-up score: `20/100`
+- runner-up score: `25/100`
 - reward claimed: `true`
 
 Consensus rationale:
 
-> primary-report cites IANA's dedicated example-domains page explicitly naming example.com, plus RFC 2606 and RFC 6761 as standards-track authority. generic-report only references example.org and generic IANA/RFC homepages without specific claims.
+> primary-report cites IANA's dedicated example-domains page that explicitly names example.com and references RFC 2606/RFC 6761, plus example.com's own notice. generic-report only provides generic homepages and example.org without direct, authoritative support for example.com.
 
 ## Safety and market integrity
 
@@ -71,12 +71,13 @@ Consensus rationale:
 - validators independently recompute the winner
 - reward claim is restricted to the stored winner
 - claim state is updated before the external transfer
+- unfilled bounties have a creator-only refund path; with one entry, refund requires the deadline to pass
 
 ## Automated checks
 
 The repository includes:
 
-- six direct contract tests
+- seven direct contract tests
 - GenVM lint and validation
 - Next.js production build
 - live Studionet end-to-end integration workflow
