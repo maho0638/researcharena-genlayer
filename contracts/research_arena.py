@@ -349,9 +349,14 @@ Return JSON only with every field present:
                 validator_reason = str(validator.get("reason_code", ""))
                 if leader_reason not in allowed_reasons:
                     return False
-                if leader_reason != validator_reason:
+                if validator_reason not in allowed_reasons:
                     return False
 
+                # The economic decision fields must independently converge.
+                # Reason categories are structured explanatory metadata: different
+                # validators may choose different valid primary reasons for the
+                # same winner, so requiring exact category equality would make
+                # consensus brittle without improving payout safety.
                 return (
                     abs(leader_score - validator_score) <= 12
                     and abs(leader_runner - validator_runner) <= 12

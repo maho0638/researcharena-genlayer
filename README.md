@@ -51,7 +51,7 @@ The live test compared a primary IANA/RFC-backed report against a generic compet
 - winner: `primary-report`
 - winning score: `95/100`
 - runner-up score: `20/100`
-- agreed reason code: `RUBRIC_FIT`
+- stored structured reason code: `RUBRIC_FIT`
 - reward claimed: `true`
 
 Consensus rationale:
@@ -69,7 +69,7 @@ Consensus rationale:
 - duplicate submission IDs rejected
 - the two evidence URLs must be distinct and use different hostnames; source authority and real independence remain part of the live evidence judgment
 - webpage content is explicitly treated as untrusted input
-- validators independently recompute the winner, both settlement scores, and an explicitly requested structured reason code
+- validators independently recompute the winner and both settlement scores; the leader's structured reason code is schema-validated and stored as explanatory metadata
 - reward claim is restricted to the stored winner
 - claim state is updated before the external transfer
 - unfilled bounties have a creator-only refund path; with one entry, refund requires the deadline to pass

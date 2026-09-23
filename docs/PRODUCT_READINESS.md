@@ -13,7 +13,7 @@ ResearchArena is a competitive research bounty market.
 5. GenLayer renders the live evidence at settlement time.
 6. The leader evaluates all entries under the sponsor's precommitted rubric.
 7. Validators independently repeat the evidence review.
-8. Consensus requires the same winner, bounded score agreement, and the same structured reason code.
+8. Consensus requires the same winner and bounded score agreement. Each evaluation must also return a valid structured reason category, while exact category equality is intentionally not required because it is explanatory rather than payout-critical.
 9. The accepted settlement is written on-chain.
 10. Only the consensus-selected researcher can claim the escrowed GEN.
 
@@ -72,7 +72,7 @@ The validator does not merely validate JSON shape. It re-runs the evidence revie
 - the validator independently chooses the same winner;
 - winner and runner-up scores are within the contract's explicit tolerance;
 - the runner-up score does not exceed the winner score; and
-- the structured reason code is valid and exactly matches.
+- both structured reason codes are valid allowed categories; exact category equality is not required because payout safety depends on winner and score convergence.
 
 The displayed rationale is then composed deterministically from accepted settlement fields.
 

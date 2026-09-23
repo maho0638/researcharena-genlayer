@@ -25,7 +25,7 @@ The validator independently repeats web retrieval and evaluation. Acceptance req
 - winner score agreement within a bounded tolerance;
 - runner-up score agreement within a bounded tolerance;
 - runner-up score cannot exceed winner score;
-- the settlement reason code is explicitly requested from both leader and validator and must match exactly;
+- both leader and validator must return an allowed structured reason category, but exact category equality is not required because subjective labels are less stable than the payout-critical winner and scores;
 - the displayed rationale is deterministically composed from agreed settlement fields rather than storing unconstrained leader prose.
 
 ## Funds safety
