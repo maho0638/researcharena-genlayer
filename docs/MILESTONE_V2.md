@@ -31,7 +31,7 @@ ResearchArena V1 was accepted as a competitive research bounty market with nativ
    - Winner-only claims.
    - Explicit refund for no-winner REJECTED outcomes.
    - Existing unfilled-market refund.
-   - 24-hour post-deadline stalled-resolution recovery for CLOSED/CHALLENGED states.
+   - 24-hour stalled-resolution recovery measured from the actual CLOSED or CHALLENGED state transition.
    - Settlement state changes before external transfer.
 
 6. Reusable SDK
@@ -56,3 +56,14 @@ V2 must not replace the accepted V1 deployment until all of these pass:
 - reviewer-facing machine-readable evidence
 
 The accepted V1 contract remains untouched while V2 is developed and verified on the researcharena-v2-protocol branch.
+
+
+## Scoring-oriented evidence discipline
+
+The Portal score is not assumed or guaranteed. V2 is structured so a steward can independently verify the size of the milestone rather than infer it from feature claims:
+
+- every major capability maps to contract state and a direct test;
+- the live workflow proves positive, challenge, multi-phase, and no-winner/refund paths;
+- source provenance proves the deployed contract is the repository contract;
+- the V1 accepted baseline remains untouched so the milestone delta is auditable;
+- Vercel deployment is deliberately disabled during development and happens only after the full promotion checklist passes.

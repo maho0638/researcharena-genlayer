@@ -12,6 +12,38 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
       - run: pip install -r requirements.txt
+      - run: npm install
+
       - name: Deploy V2 and verify multi-phase, challenge, and refund paths
-        run: gltest tests/integration/test_studionet_v2_program.py -v -s --network studionet
+        id: live
+        run: |
+          set -euo pipefail
+          gltest tests/integration/test_studionet_v2_program.py -v -s --network studionet | tee /tmp/v2.log
+          grep -q 'RA_V2_DEPLOY_INPUT_MATCH=true' /tmp/v2.log
+          grep -q 'RA_V2_PHASE2_LOCKED_BEFORE_PHASE1_PAID=true' /tmp/v2.log
+          grep -q 'RA_V2_EVIDENCE_SNAPSHOTS_STORED=true' /tmp/v2.log
+          grep -q 'RA_V2_PHASE2_UNLOCKED_AFTER_PHASE1_PAID=true' /tmp/v2.log
+          grep -q 'RA_V2_TWO_PHASE_PROGRAM_VERIFIED=true' /tmp/v2.log
+          grep -q 'RA_V2_RESEARCHER_STATS_VERIFIED=true' /tmp/v2.log
+          grep -q 'RA_V2_NO_WINNER_VERIFIED=true' /tmp/v2.log
+          grep -q 'RA_V2_ALL_LIVE_PATHS_VERIFIED=true' /tmp/v2.log
+          ADDRESS="$(grep -oE 'RA_V2_CONTRACT_ADDRESS=0x[a-fA-F0-9]{40}' /tmp/v2.log | tail -1 | cut -d= -f2)"
+          test -n "$ADDRESS"
+          echo "contract_address=$ADDRESS" >> "$GITHUB_OUTPUT"
+
+      - name: Verify deployed source equality
+        env:
+          CONTRACT_ADDRESS: ${{ steps.live.outputs.contract_address }}
+          CONTRACT_SOURCE_PATH: contracts/research_arena_v2.py
+        run: node scripts/verify-v2-deployed-source.mjs
+
+      - name: Upload reviewer proof log
+        uses: actions/upload-artifact@v4
+        with:
+          name: researcharena-v2-live-proof
+          path: /tmp/v2.log
+          if-no-files-found: error

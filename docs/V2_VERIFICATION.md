@@ -51,7 +51,20 @@ The final milestone submission should include:
 - production app
 - short walkthrough video
 - GitHub repository
-- live verification workflow
+- live verification workflow artifact with transaction markers
 - machine-readable V2 proof manifest
 - source-match proof
 - milestone diff document
+
+
+## Promotion order
+
+1. Direct tests and both V1/V2 GenVM lint pass.
+2. SDK build/tests pass.
+3. Frontend production build passes.
+4. Manual Studionet proof passes once against the final source.
+5. Deployed-source equality is proven.
+6. Canonical address is pinned into the V2 reviewer evidence.
+7. Only then is the final production deployment performed.
+
+No production deployment is used as a development or debugging loop.
