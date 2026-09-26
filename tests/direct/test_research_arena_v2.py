@@ -75,12 +75,18 @@ def mock_available_evidence(direct_vm, authority_body="Authoritative source expl
     )
 
 
-def mock_winner(direct_vm, score=96, runner=35, reason="INDEPENDENT_CORROBORATION"):
+def mock_winner(
+    direct_vm,
+    score=96,
+    runner=35,
+    reason="INDEPENDENT_CORROBORATION",
+    winner_id="primary",
+):
     direct_vm.mock_llm(
         r"(?s).*neutral settlement judge for a competitive research market.*",
         json.dumps(
             {
-                "winner_id": "primary",
+                "winner_id": winner_id,
                 "winner_score": score,
                 "runner_up_score": runner,
                 "reason_code": reason,
@@ -205,6 +211,12 @@ def test_v2_resolution_stores_evidence_snapshots(
     assert bounty.winning_score == 96
     assert bounty.runner_up_score == 35
     assert bounty.reason_code == "INDEPENDENT_CORROBORATION"
+    assert bounty.initial_recorded is True
+    assert bounty.initial_winner_submission_id == "primary"
+    assert bounty.initial_winning_score == 96
+    assert bounty.initial_reason_code == "INDEPENDENT_CORROBORATION"
+    assert bounty.resolution_round == 1
+    assert "Primary report" in bounty.initial_report_snapshot
     assert "Primary report" in bounty.winner_report_snapshot
     assert "Authoritative source" in bounty.winner_source_1_snapshot
     assert "Independent source" in bounty.winner_source_2_snapshot
@@ -420,3 +432,44 @@ def test_v2_challenge_records_fresh_stalled_timestamp(
     direct_vm.sender = direct_alice
     with direct_vm.expect_revert("grace period"):
         contract.recover_stalled_bounty("bounty-v2")
+
+
+def test_v2_challenge_preserves_initial_verdict_and_records_new_round(
+    direct_vm, direct_deploy, direct_alice, direct_bob, direct_charlie
+):
+    contract = direct_deploy("contracts/research_arena_v2.py")
+    create_bounty(direct_vm, contract, direct_alice)
+    add_two_submissions(direct_vm, contract, direct_bob, direct_charlie)
+    resolve_primary(direct_vm, contract, direct_alice)
+
+    direct_vm.sender = direct_charlie
+    contract.challenge_resolution(
+        "bounty-v2",
+        "The runner evidence should be freshly checked against the same precommitted rubric.",
+    )
+
+    mock_available_evidence(direct_vm)
+    mock_winner(
+        direct_vm,
+        score=91,
+        runner=86,
+        reason="RUBRIC_FIT",
+        winner_id="runner",
+    )
+    contract.resolve_challenge("bounty-v2")
+
+    bounty = contract.get_bounty("bounty-v2")
+    assert bounty.status == "RESOLVED"
+    assert bounty.resolution_round == 2
+
+    # Round one remains immutable for an auditable appeal diff.
+    assert bounty.initial_winner_submission_id == "primary"
+    assert bounty.initial_winning_score == 96
+    assert bounty.initial_reason_code == "INDEPENDENT_CORROBORATION"
+    assert "Primary report" in bounty.initial_report_snapshot
+
+    # The current settlement state reflects the fresh consensus round.
+    assert bounty.winner_submission_id == "runner"
+    assert bounty.winning_score == 91
+    assert bounty.reason_code == "RUBRIC_FIT"
+    assert "Runner report" in bounty.winner_report_snapshot
