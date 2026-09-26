@@ -25,7 +25,9 @@
       "name": "researcharena-v2-live-proof",
       "digest": "sha256:ef01efd3ed619afe669176fe2732f2ead63eae62f62e84f8130084300c938e54",
       "expires_at": "2026-12-25T20:21:54Z"
-    }
+    },
+    "final_reviewer_branch_tests": 43,
+    "canonical_contract_predeploy_tests": 42
   },
   "lifecycle": {
     "phase_1": {

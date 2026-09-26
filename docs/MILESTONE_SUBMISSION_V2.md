@@ -79,7 +79,7 @@ Negative path:
 ## Verification quality
 
 Predeploy CI proved:
-- 42 direct/repository consistency tests pass;
+- 43 direct/repository consistency tests pass on the final reviewer branch; the canonical contract itself was deployed only after the 42-test predeploy gate was green;
 - explicit validator tests cover dynamic snapshot text, different-winner disagreement, below-threshold disagreement and materially equivalent no-winner agreement;
 - V1 and V2 GenVM lint/validation pass;
 - integration test syntax check passes;
@@ -104,7 +104,7 @@ Normalized deployed and repository source SHA-256:
 
 ## Suggested Portal “What changed?”
 
-ResearchArena V2 is a protocol-level milestone beyond the accepted V1 bounty market. It adds ordered multi-phase research programs with independent GEN escrow per phase, prerequisite payout gating, a 70/100 settlement threshold, explicit no-winner/refund handling, on-chain winner evidence snapshots, one-shot challenges with fresh consensus, preserved initial verdict/challenge history, researcher settlement statistics, stalled-resolution recovery and a reusable TypeScript SDK. After diagnosing a live NO_MAJORITY case caused by byte-exact dynamic web snapshots, validator logic was hardened to independently refetch immutable evidence and compare the stable economic outcome. The final Studionet contract 0xf2dd996300750d880a7db948f41b639e1EA6624A completed the full two-phase, challenge, payout and rejected/refund lifecycle in workflow 36269260931. 42 tests, V1/V2 GenVM lint, SDK tests, frontend production build and deployed-source matching all pass.
+ResearchArena V2 is a protocol-level milestone beyond the accepted V1 bounty market. It adds ordered multi-phase research programs with independent GEN escrow per phase, prerequisite payout gating, a 70/100 settlement threshold, explicit no-winner/refund handling, on-chain winner evidence snapshots, one-shot challenges with fresh consensus, preserved initial verdict/challenge history, researcher settlement statistics, stalled-resolution recovery and a reusable TypeScript SDK. After diagnosing a live NO_MAJORITY case caused by byte-exact dynamic web snapshots, validator logic was hardened to independently refetch immutable evidence and compare the stable economic outcome. The final Studionet contract 0xf2dd996300750d880a7db948f41b639e1EA6624A completed the full two-phase, challenge, payout and rejected/refund lifecycle in workflow 36269260931. 43 final reviewer-branch tests, V1/V2 GenVM lint, SDK tests and frontend production build pass; the canonical contract was deployed after the 42-test predeploy gate and exact deployed-source matching also passes.
 
 ## Suggested expected verification
 

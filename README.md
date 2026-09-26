@@ -52,7 +52,8 @@ V2 adds:
 - **Explorer:** https://explorer-studio.genlayer.com/address/0xf2dd996300750d880a7db948f41b639e1EA6624A
 - **Canonical workflow:** https://github.com/maho0638/researcharena-genlayer/actions/runs/36269260931
 - **Predeploy CI:** https://github.com/maho0638/researcharena-genlayer/actions/runs/36268953560
-- **Direct/repository tests:** 42 passed
+- **Canonical contract predeploy tests:** 42 passed
+- **Current reviewer branch tests:** 43 passed (adds final proof-manifest consistency)
 - **Normalized deployed/repository source SHA-256:** `a1c3807c5a2fbe31fa1a0a0cca655f5816e735292dab81700f3295ca19396eba`
 - **Source equality:** `RA_V2_DEPLOYED_SOURCE_MATCH=true`
 - **Proof artifact digest:** `sha256:ef01efd3ed619afe669176fe2732f2ead63eae62f62e84f8130084300c938e54`
@@ -122,7 +123,7 @@ Consensus rationale:
 
 The repository includes:
 
-- 42 direct/repository consistency tests across the V1 baseline and V2 milestone
+- 43 direct/repository consistency tests across the V1 baseline and V2 milestone; 42 of these were already green before the canonical contract deployment, and the 43rd seals the published proof manifest
 - explicit validator-equivalence tests for dynamic web snapshots, winner disagreement, threshold failure and no-winner agreement
 - GenVM lint and validation for both V1 and V2 contracts
 - TypeScript SDK build/tests
