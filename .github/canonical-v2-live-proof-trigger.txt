@@ -1,0 +1,11 @@
+CANONICAL_V2_LIVE_PROOF
+predeploy_ci_run=36268953560
+predeploy_ci_result=success
+direct_tests=42_passed
+integration_py_compile=success
+frontend_build=success
+sdk_tests=success
+v1_lint=success
+v2_lint=success
+vercel_auto_deploy=false
+reason=single final Studionet deployment after material-equivalence consensus hardening
