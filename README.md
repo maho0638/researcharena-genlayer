@@ -26,6 +26,32 @@ The project is not a chatbot or an LLM wrapper. The consensus result determines 
 4. **Resolve** — GenLayer fetches all live evidence and validators independently judge the same competition.
 5. **Claim** — only the consensus-selected researcher can claim the escrowed reward.
 
+## V2 milestone — evidence-bound research programs
+
+The `researcharena-v2-protocol` branch is a protocol milestone beyond the accepted V1 deployment. V1 remains the verified production baseline until every V2 promotion gate passes.
+
+V2 adds:
+
+- ordered multi-phase research programs with per-phase GEN escrow
+- prerequisite gating: later phases unlock only after the previous phase is actually `PAID`
+- a 70/100 minimum settlement threshold and explicit no-winner/refund outcomes
+- live winner evidence snapshots stored on-chain
+- one-shot participant/sponsor challenges with fresh consensus
+- preserved initial verdict + challenge note so the appeal round is auditable
+- researcher settlement history and program-level progress views
+- 24-hour stalled recovery measured from the actual `CLOSED` / `CHALLENGED` transition
+- a reusable TypeScript SDK for reads, settlement audits, submissions, challenge, claim, refund and recovery requests
+- a manual-only Studionet verification workflow with deployed-source equality proof
+
+**Promotion rule:** automatic Vercel deployment is disabled on the V2 development branch. The final contract address and production UI are promoted only after CI, direct tests, lint, SDK tests, frontend build, live economic-path proof and deployed-source equality all pass.
+
+Reviewer docs:
+
+- `docs/MILESTONE_V2.md`
+- `docs/V2_VERIFICATION.md`
+- `docs/V2_PROOF_MANIFEST.template.json`
+- `.github/workflows/verify-v2-studionet.yml`
+
 ## Verified live Studionet deployment
 
 - **Network:** GenLayer Studionet
