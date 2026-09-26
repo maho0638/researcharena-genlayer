@@ -13,12 +13,53 @@ def _field(value, name):
     return value.get(name) if isinstance(value, dict) else getattr(value, name)
 
 
+def _is_transient_rpc_error(exc):
+    message = str(exc)
+    return any(
+        token in message
+        for token in (
+            "502",
+            "Bad gateway",
+            "invalid JSON",
+            "ConnectionError",
+            "Read timed out",
+            "RemoteDisconnected",
+        )
+    )
+
+
+def _call_with_retry(call, attempts=6):
+    for attempt in range(1, attempts + 1):
+        try:
+            return call.call()
+        except Exception as exc:
+            if not _is_transient_rpc_error(exc) or attempt == attempts:
+                raise
+            time.sleep(min(3 * attempt, 12))
+
+
+def _transact_with_nonce_retry(call, attempts=5, **kwargs):
+    """Retry only pre-submit nonce RPC failures; never replay an unknown tx."""
+    for attempt in range(1, attempts + 1):
+        try:
+            return call.transact(**kwargs)
+        except Exception as exc:
+            message = str(exc)
+            safe_to_retry = (
+                "eth_getTransactionCount" in message
+                and _is_transient_rpc_error(exc)
+            )
+            if not safe_to_retry or attempt == attempts:
+                raise
+            time.sleep(min(4 * attempt, 16))
+
+
 def _wait_status(contract, bounty_id, expected, timeout=180):
     expected = set(expected)
     deadline = time.time() + timeout
     last = None
     while time.time() < deadline:
-        last = contract.get_bounty(args=[bounty_id]).call()
+        last = _call_with_retry(contract.get_bounty(args=[bounty_id]))
         status = str(_field(last, "status"))
         if status in expected:
             return last
@@ -30,39 +71,50 @@ def _wait_status(contract, bounty_id, expected, timeout=180):
 
 
 def _submit_competition(creator, researcher_a, researcher_b, contract, bounty_id):
-    submit_a = researcher_a.submit_research(
-        args=[
-            bounty_id,
-            f"{bounty_id}-primary",
-            "https://www.iana.org/help/example-domains",
-            "https://www.iana.org/domains/reserved",
-            "https://www.rfc-editor.org/rfc/rfc2606",
-        ]
-    ).transact(wait_interval=10000, wait_retries=40)
+    submit_a = _transact_with_nonce_retry(
+        researcher_a.submit_research(
+            args=[
+                bounty_id,
+                f"{bounty_id}-primary",
+                "https://www.iana.org/help/example-domains",
+                "https://www.iana.org/domains/reserved",
+                "https://www.rfc-editor.org/rfc/rfc2606",
+            ]
+        ),
+        wait_interval=10000,
+        wait_retries=40,
+    )
     assert tx_execution_succeeded(submit_a)
     print(f"RA_V2_{bounty_id}_SUBMIT_PRIMARY_TX={submit_a.get('hash', '')}", flush=True)
 
-    submit_b = researcher_b.submit_research(
-        args=[
-            bounty_id,
-            f"{bounty_id}-generic",
-            "https://example.org",
-            "https://www.iana.org",
-            "https://www.rfc-editor.org",
-        ]
-    ).transact(wait_interval=10000, wait_retries=40)
+    submit_b = _transact_with_nonce_retry(
+        researcher_b.submit_research(
+            args=[
+                bounty_id,
+                f"{bounty_id}-generic",
+                "https://example.org",
+                "https://www.iana.org",
+                "https://www.rfc-editor.org",
+            ]
+        ),
+        wait_interval=10000,
+        wait_retries=40,
+    )
     assert tx_execution_succeeded(submit_b)
     print(f"RA_V2_{bounty_id}_SUBMIT_GENERIC_TX={submit_b.get('hash', '')}", flush=True)
 
-    close_tx = creator.close_bounty(args=[bounty_id]).transact(
-        wait_interval=10000, wait_retries=40
+    close_tx = _transact_with_nonce_retry(
+        creator.close_bounty(args=[bounty_id]),
+        wait_interval=10000,
+        wait_retries=40,
     )
     assert tx_execution_succeeded(close_tx)
     print(f"RA_V2_{bounty_id}_CLOSE_TX={close_tx.get('hash', '')}", flush=True)
 
 
 def _resolve(creator, contract, bounty_id):
-    tx = creator.resolve_bounty(args=[bounty_id]).transact(
+    tx = _transact_with_nonce_retry(
+        creator.resolve_bounty(args=[bounty_id]),
         consensus_max_rotations=5,
         wait_interval=10000,
         wait_retries=50,
@@ -109,48 +161,58 @@ def test_researcharena_v2_program_challenge_and_refund(default_account, accounts
     phase_1 = "ra-v2-evidence-phase"
     phase_2 = "ra-v2-synthesis-phase"
 
-    create_1 = creator.create_program_phase(
-        args=[
-            program_id,
-            phase_1,
-            "",
-            (
-                "Which submitted report most directly establishes that example.com "
-                "is reserved for documentation examples?"
-            ),
-            (
-                "Prefer IANA and standards-track evidence that explicitly supports "
-                "the claim, with independent corroboration."
-            ),
-            now + 7200,
-            2,
-        ]
-    ).transact(value=reward, wait_interval=10000, wait_retries=40)
+    create_1 = _transact_with_nonce_retry(
+        creator.create_program_phase(
+            args=[
+                program_id,
+                phase_1,
+                "",
+                (
+                    "Which submitted report most directly establishes that example.com "
+                    "is reserved for documentation examples?"
+                ),
+                (
+                    "Prefer IANA and standards-track evidence that explicitly supports "
+                    "the claim, with independent corroboration."
+                ),
+                now + 7200,
+                2,
+            ]
+        ),
+        value=reward,
+        wait_interval=10000,
+        wait_retries=40,
+    )
     assert tx_execution_succeeded(create_1)
     print(f"RA_V2_PHASE1_CREATE_TX={create_1.get('hash', '')}", flush=True)
 
-    create_2 = creator.create_program_phase(
-        args=[
-            program_id,
-            phase_2,
-            phase_1,
-            (
-                "Which submitted synthesis most directly establishes that example.com "
-                "is reserved for documentation examples?"
-            ),
-            (
-                "Prefer direct standards evidence and independent corroboration; "
-                "reject generic pages that do not prove the claim."
-            ),
-            now + 14400,
-            2,
-        ]
-    ).transact(value=reward, wait_interval=10000, wait_retries=40)
+    create_2 = _transact_with_nonce_retry(
+        creator.create_program_phase(
+            args=[
+                program_id,
+                phase_2,
+                phase_1,
+                (
+                    "Which submitted synthesis most directly establishes that example.com "
+                    "is reserved for documentation examples?"
+                ),
+                (
+                    "Prefer direct standards evidence and independent corroboration; "
+                    "reject generic pages that do not prove the claim."
+                ),
+                now + 14400,
+                2,
+            ]
+        ),
+        value=reward,
+        wait_interval=10000,
+        wait_retries=40,
+    )
     assert tx_execution_succeeded(create_2)
     print(f"RA_V2_PHASE2_CREATE_TX={create_2.get('hash', '')}", flush=True)
 
-    assert int(contract.get_program_phase_count(args=[program_id]).call()) == 2
-    assert bool(contract.is_phase_unlocked(args=[phase_2]).call()) is False
+    assert int(_call_with_retry(contract.get_program_phase_count(args=[program_id]))) == 2
+    assert bool(_call_with_retry(contract.is_phase_unlocked(args=[phase_2]))) is False
     print("RA_V2_PHASE2_LOCKED_BEFORE_PHASE1_PAID=true", flush=True)
 
     _submit_competition(creator, researcher_a, researcher_b, contract, phase_1)
@@ -163,17 +225,22 @@ def test_researcharena_v2_program_challenge_and_refund(default_account, accounts
     assert str(_field(phase1_result, "winner_source_2_snapshot"))
     print("RA_V2_EVIDENCE_SNAPSHOTS_STORED=true", flush=True)
 
-    challenge = researcher_b.challenge_resolution(
-        args=[
-            phase_1,
-            "Request one fresh evidence fetch before payout to verify the competitive result.",
-        ]
-    ).transact(wait_interval=10000, wait_retries=40)
+    challenge = _transact_with_nonce_retry(
+        researcher_b.challenge_resolution(
+            args=[
+                phase_1,
+                "Request one fresh evidence fetch before payout to verify the competitive result.",
+            ]
+        ),
+        wait_interval=10000,
+        wait_retries=40,
+    )
     assert tx_execution_succeeded(challenge)
     print(f"RA_V2_CHALLENGE_TX={challenge.get('hash', '')}", flush=True)
     _wait_status(contract, phase_1, {"CHALLENGED"})
 
-    resolve_challenge = creator.resolve_challenge(args=[phase_1]).transact(
+    resolve_challenge = _transact_with_nonce_retry(
+        creator.resolve_challenge(args=[phase_1]),
         consensus_max_rotations=5,
         wait_interval=10000,
         wait_retries=50,
@@ -192,14 +259,16 @@ def test_researcharena_v2_program_challenge_and_refund(default_account, accounts
     assert str(_field(phase1_after, "winner_submission_id")) == f"{phase_1}-primary"
     print("RA_V2_AUDITABLE_APPEAL_VERIFIED=true", flush=True)
 
-    claim_1 = researcher_a.claim_reward(args=[phase_1]).transact(
-        wait_interval=10000, wait_retries=40
+    claim_1 = _transact_with_nonce_retry(
+        researcher_a.claim_reward(args=[phase_1]),
+        wait_interval=10000,
+        wait_retries=40,
     )
     assert tx_execution_succeeded(claim_1)
     print(f"RA_V2_PHASE1_CLAIM_TX={claim_1.get('hash', '')}", flush=True)
     _wait_status(contract, phase_1, {"PAID"})
 
-    assert bool(contract.is_phase_unlocked(args=[phase_2]).call()) is True
+    assert bool(_call_with_retry(contract.is_phase_unlocked(args=[phase_2]))) is True
     print("RA_V2_PHASE2_UNLOCKED_AFTER_PHASE1_PAID=true", flush=True)
 
     _submit_competition(creator, researcher_a, researcher_b, contract, phase_2)
@@ -207,72 +276,89 @@ def test_researcharena_v2_program_challenge_and_refund(default_account, accounts
     assert str(_field(phase2_result, "status")) == "RESOLVED"
     assert str(_field(phase2_result, "winner_submission_id")) == f"{phase_2}-primary"
 
-    claim_2 = researcher_a.claim_reward(args=[phase_2]).transact(
-        wait_interval=10000, wait_retries=40
+    claim_2 = _transact_with_nonce_retry(
+        researcher_a.claim_reward(args=[phase_2]),
+        wait_interval=10000,
+        wait_retries=40,
     )
     assert tx_execution_succeeded(claim_2)
     print(f"RA_V2_PHASE2_CLAIM_TX={claim_2.get('hash', '')}", flush=True)
     _wait_status(contract, phase_2, {"PAID"})
 
-    progress = contract.get_program_progress(args=[program_id]).call()
+    progress = _call_with_retry(contract.get_program_progress(args=[program_id]))
     assert int(_field(progress, "total_phases")) == 2
     assert int(_field(progress, "paid_phases")) == 2
     assert int(_field(progress, "total_reward")) == reward * 2
     assert int(_field(progress, "settled_reward")) == reward * 2
     print("RA_V2_TWO_PHASE_PROGRAM_VERIFIED=true", flush=True)
 
-    stats = contract.get_researcher_stats(
-        args=[str(accounts[1].address)]
-    ).call()
+    stats = _call_with_retry(
+        contract.get_researcher_stats(args=[str(accounts[1].address)])
+    )
     assert int(_field(stats, "paid_wins")) == 2
     assert int(_field(stats, "total_earned")) == reward * 2
     print("RA_V2_RESEARCHER_STATS_VERIFIED=true", flush=True)
 
     bad_id = "ra-v2-no-winner-refund"
-    create_bad = creator.create_bounty(
-        args=[
-            bad_id,
-            (
-                "Which submission directly proves the ResearchArena V2 multi-phase "
-                "protocol, challenge flow, and evidence-bound settlement?"
-            ),
-            (
-                "Reject unrelated or unavailable evidence. A winner must directly "
-                "prove the specified V2 protocol behavior."
-            ),
-            now + 7200,
-            2,
-        ]
-    ).transact(value=reward, wait_interval=10000, wait_retries=40)
+    create_bad = _transact_with_nonce_retry(
+        creator.create_bounty(
+            args=[
+                bad_id,
+                (
+                    "Which submission directly proves the ResearchArena V2 multi-phase "
+                    "protocol, challenge flow, and evidence-bound settlement?"
+                ),
+                (
+                    "Reject unrelated or unavailable evidence. A winner must directly "
+                    "prove the specified V2 protocol behavior."
+                ),
+                now + 7200,
+                2,
+            ]
+        ),
+        value=reward,
+        wait_interval=10000,
+        wait_retries=40,
+    )
     assert tx_execution_succeeded(create_bad)
     print(f"RA_V2_BAD_CREATE_TX={create_bad.get('hash', '')}", flush=True)
 
-    bad_a = researcher_a.submit_research(
-        args=[
-            bad_id,
-            "unavailable-a",
-            "https://example.com",
-            "https://missing-one.invalid/evidence",
-            "https://missing-two.invalid/evidence",
-        ]
-    ).transact(wait_interval=10000, wait_retries=40)
+    bad_a = _transact_with_nonce_retry(
+        researcher_a.submit_research(
+            args=[
+                bad_id,
+                "unavailable-a",
+                "https://example.com",
+                "https://missing-one.invalid/evidence",
+                "https://missing-two.invalid/evidence",
+            ]
+        ),
+        wait_interval=10000,
+        wait_retries=40,
+    )
     assert tx_execution_succeeded(bad_a)
     print(f"RA_V2_BAD_SUBMIT_A_TX={bad_a.get('hash', '')}", flush=True)
 
-    bad_b = researcher_b.submit_research(
-        args=[
-            bad_id,
-            "unavailable-b",
-            "https://example.org",
-            "https://missing-three.invalid/evidence",
-            "https://missing-four.invalid/evidence",
-        ]
-    ).transact(wait_interval=10000, wait_retries=40)
+    bad_b = _transact_with_nonce_retry(
+        researcher_b.submit_research(
+            args=[
+                bad_id,
+                "unavailable-b",
+                "https://example.org",
+                "https://missing-three.invalid/evidence",
+                "https://missing-four.invalid/evidence",
+            ]
+        ),
+        wait_interval=10000,
+        wait_retries=40,
+    )
     assert tx_execution_succeeded(bad_b)
     print(f"RA_V2_BAD_SUBMIT_B_TX={bad_b.get('hash', '')}", flush=True)
 
-    close_bad = creator.close_bounty(args=[bad_id]).transact(
-        wait_interval=10000, wait_retries=40
+    close_bad = _transact_with_nonce_retry(
+        creator.close_bounty(args=[bad_id]),
+        wait_interval=10000,
+        wait_retries=40,
     )
     assert tx_execution_succeeded(close_bad)
     print(f"RA_V2_BAD_CLOSE_TX={close_bad.get('hash', '')}", flush=True)
@@ -287,8 +373,10 @@ def test_researcharena_v2_program_challenge_and_refund(default_account, accounts
     }
     print("RA_V2_NO_WINNER_VERIFIED=true", flush=True)
 
-    refund = creator.refund_rejected(args=[bad_id]).transact(
-        wait_interval=10000, wait_retries=40
+    refund = _transact_with_nonce_retry(
+        creator.refund_rejected(args=[bad_id]),
+        wait_interval=10000,
+        wait_retries=40,
     )
     assert tx_execution_succeeded(refund)
     print(f"RA_V2_REJECTED_REFUND_TX={refund.get('hash', '')}", flush=True)
