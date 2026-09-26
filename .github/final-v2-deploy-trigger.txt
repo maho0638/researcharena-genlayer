@@ -1,0 +1,5 @@
+FINAL_V2_PROMOTION_TRIGGER
+predeploy_ci_run=36264482064
+predeploy_ci_head=040fdfe1843d23e3159ea1d757ee7c770b67483d
+predeploy_direct_tests=38
+automatic_vercel_deploy=false
