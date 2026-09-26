@@ -55,6 +55,9 @@ V2 adds:
 - **Direct/repository tests:** 42 passed
 - **Normalized deployed/repository source SHA-256:** `a1c3807c5a2fbe31fa1a0a0cca655f5816e735292dab81700f3295ca19396eba`
 - **Source equality:** `RA_V2_DEPLOYED_SOURCE_MATCH=true`
+- **Proof artifact digest:** `sha256:ef01efd3ed619afe669176fe2732f2ead63eae62f62e84f8130084300c938e54`
+- **Production route after final promotion:** https://researcharena-genlayer.vercel.app/v2
+- **Machine-readable proof after final promotion:** https://researcharena-genlayer.vercel.app/v2-proof.json
 - **Live result:** two ordered phases both resolved and paid; one challenge was re-resolved; an unavailable-evidence market was rejected and refunded.
 
 Reviewer docs:
@@ -62,6 +65,7 @@ Reviewer docs:
 - `docs/MILESTONE_V2.md`
 - `docs/V2_VERIFICATION.md`
 - `docs/V2_PROOF_MANIFEST.json`
+- `docs/MILESTONE_SUBMISSION_V2.md`
 - `.github/workflows/verify-v2-studionet.yml`
 
 ## V1 baseline verified live Studionet deployment

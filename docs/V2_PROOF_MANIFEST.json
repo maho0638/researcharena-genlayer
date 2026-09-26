@@ -19,7 +19,13 @@
     "normalized_repository_source_sha256": "a1c3807c5a2fbe31fa1a0a0cca655f5816e735292dab81700f3295ca19396eba",
     "source_match": true,
     "production_url": "https://researcharena-genlayer.vercel.app/v2",
-    "machine_proof_url": "https://researcharena-genlayer.vercel.app/v2-proof.json"
+    "machine_proof_url": "https://researcharena-genlayer.vercel.app/v2-proof.json",
+    "proof_artifact": {
+      "id": 10915350860,
+      "name": "researcharena-v2-live-proof",
+      "digest": "sha256:ef01efd3ed619afe669176fe2732f2ead63eae62f62e84f8130084300c938e54",
+      "expires_at": "2026-12-25T20:21:54Z"
+    }
   },
   "lifecycle": {
     "phase_1": {

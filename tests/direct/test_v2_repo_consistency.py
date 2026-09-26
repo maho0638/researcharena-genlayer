@@ -59,12 +59,21 @@ def test_deployed_source_verifier_targets_exact_v2_contract():
 
 def test_proof_manifest_requires_source_and_economic_paths():
     manifest = json.loads(read("docs/V2_PROOF_MANIFEST.json"))
-    assertions = set(manifest["required_assertions"])
-    assert "RA_V2_DEPLOYED_SOURCE_MATCH=true" in assertions
-    assert "RA_V2_AUDITABLE_APPEAL_VERIFIED=true" in assertions
-    assert "RA_V2_NO_WINNER_VERIFIED=true" in assertions
-    assert "RA_V2_REFUNDED=true" in assertions
-    assert "RA_V2_ALL_LIVE_PATHS_VERIFIED=true" in assertions
+    assertions = manifest["assertions"]
+    assert assertions["deployed_source_match"] is True
+    assert assertions["auditable_appeal_verified"] is True
+    assert assertions["no_winner_verified"] is True
+    assert assertions["refunded"] is True
+    assert assertions["all_live_paths_verified"] is True
+    assert manifest["v2"]["canonical_contract"] == "0xf2dd996300750d880a7db948f41b639e1EA6624A"
+    assert manifest["v2"]["workflow_run"] == 36269260931
+    assert manifest["v2"]["proof_artifact"]["digest"].startswith("sha256:")
+
+
+def test_public_and_reviewer_v2_proof_manifests_match():
+    docs_manifest = json.loads(read("docs/V2_PROOF_MANIFEST.json"))
+    public_manifest = json.loads(read("public/v2-proof.json"))
+    assert docs_manifest == public_manifest
 
 
 def test_promotion_docs_keep_production_deploy_last():
