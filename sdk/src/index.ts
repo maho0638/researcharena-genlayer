@@ -1,7 +1,7 @@
 import { createClient } from "genlayer-js";
 import { studionet } from "genlayer-js/chains";
 
-export type ContractAddress = \`0x\${string}\`;
+export type ContractAddress = string;
 export const RESEARCHARENA_V2_POLICY = "RA_V2_RESEARCH_PROGRAMS";
 export const MIN_WINNER_SCORE = 70;
 
