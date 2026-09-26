@@ -480,3 +480,133 @@ def test_v2_challenge_preserves_initial_verdict_and_records_new_round(
     assert bounty.challenge_note == (
         "The runner evidence should be freshly checked against the same precommitted rubric."
     )
+
+
+def test_v2_nonwinner_cannot_claim(
+    direct_vm, direct_deploy, direct_alice, direct_bob, direct_charlie
+):
+    contract = direct_deploy("contracts/research_arena_v2.py")
+    create_bounty(direct_vm, contract, direct_alice, reward=1800)
+    add_two_submissions(direct_vm, contract, direct_bob, direct_charlie)
+    resolve_primary(direct_vm, contract, direct_alice)
+
+    direct_vm.deal(direct_vm._contract_address, 1800)
+    direct_vm.sender = direct_charlie
+    with direct_vm.expect_revert("Only the winning researcher can claim"):
+        contract.claim_reward("bounty-v2")
+
+
+def test_v2_noncreator_cannot_refund_rejected(
+    direct_vm, direct_deploy, direct_alice, direct_bob, direct_charlie
+):
+    contract = direct_deploy("contracts/research_arena_v2.py")
+    create_bounty(direct_vm, contract, direct_alice, reward=1900)
+    add_two_submissions(direct_vm, contract, direct_bob, direct_charlie)
+
+    direct_vm.sender = direct_alice
+    contract.close_bounty("bounty-v2")
+    mock_available_evidence(direct_vm)
+    mock_winner(direct_vm, score=60, runner=50, reason="EVIDENCE_GAP")
+    contract.resolve_bounty("bounty-v2")
+
+    direct_vm.deal(direct_vm._contract_address, 1900)
+    direct_vm.sender = direct_bob
+    with direct_vm.expect_revert("Only the bounty creator can refund"):
+        contract.refund_rejected("bounty-v2")
+
+
+def test_v2_settled_bounty_cannot_be_challenged(
+    direct_vm, direct_deploy, direct_alice, direct_bob, direct_charlie
+):
+    contract = direct_deploy("contracts/research_arena_v2.py")
+    create_bounty(direct_vm, contract, direct_alice, reward=2000)
+    add_two_submissions(direct_vm, contract, direct_bob, direct_charlie)
+    resolve_primary(direct_vm, contract, direct_alice)
+
+    direct_vm.deal(direct_vm._contract_address, 2000)
+    direct_vm.sender = direct_bob
+    contract.claim_reward("bounty-v2")
+
+    direct_vm.sender = direct_charlie
+    with direct_vm.expect_revert("Only an unsettled resolution can be challenged"):
+        contract.challenge_resolution(
+            "bounty-v2",
+            "A settled bounty must not reopen through the challenge entrypoint.",
+        )
+
+
+def test_v2_program_rejects_different_sponsor_for_later_phase(
+    direct_vm, direct_deploy, direct_alice, direct_bob
+):
+    contract = direct_deploy("contracts/research_arena_v2.py")
+    direct_vm.sender = direct_alice
+    direct_vm.value = 1000
+    contract.create_program_phase(
+        "program-sponsor",
+        "phase-one",
+        "",
+        QUESTION,
+        RUBRIC,
+        future_deadline(3600),
+        2,
+    )
+
+    direct_vm.sender = direct_bob
+    direct_vm.value = 1000
+    with direct_vm.expect_revert("Program phases must use the same sponsor"):
+        contract.create_program_phase(
+            "program-sponsor",
+            "phase-two",
+            "phase-one",
+            QUESTION,
+            RUBRIC,
+            future_deadline(7200),
+            2,
+        )
+    direct_vm.value = 0
+
+
+def test_v2_program_requires_increasing_phase_deadlines(
+    direct_vm, direct_deploy, direct_alice
+):
+    contract = direct_deploy("contracts/research_arena_v2.py")
+    first_deadline = future_deadline(7200)
+
+    direct_vm.sender = direct_alice
+    direct_vm.value = 1000
+    contract.create_program_phase(
+        "program-deadline",
+        "phase-one",
+        "",
+        QUESTION,
+        RUBRIC,
+        first_deadline,
+        2,
+    )
+
+    with direct_vm.expect_revert("Program phase deadlines must increase"):
+        contract.create_program_phase(
+            "program-deadline",
+            "phase-two",
+            "phase-one",
+            QUESTION,
+            RUBRIC,
+            first_deadline,
+            2,
+        )
+    direct_vm.value = 0
+
+
+def test_v2_noncreator_cannot_recover_closed_bounty(
+    direct_vm, direct_deploy, direct_alice, direct_bob, direct_charlie
+):
+    contract = direct_deploy("contracts/research_arena_v2.py")
+    create_bounty(direct_vm, contract, direct_alice)
+    add_two_submissions(direct_vm, contract, direct_bob, direct_charlie)
+
+    direct_vm.sender = direct_alice
+    contract.close_bounty("bounty-v2")
+
+    direct_vm.sender = direct_bob
+    with direct_vm.expect_revert("Only the bounty creator can recover"):
+        contract.recover_stalled_bounty("bounty-v2")
