@@ -48,14 +48,14 @@ def add_two_submissions(
     )
 
 
-def mock_available_evidence(direct_vm):
+def mock_available_evidence(direct_vm, authority_body="Authoritative source explicitly confirms the primary report."):
     direct_vm.mock_web(
         r".*report-a\.example.*",
         {"status": 200, "body": "Primary report directly answers the question with cited evidence."},
     )
     direct_vm.mock_web(
         r".*authority\.example.*",
-        {"status": 200, "body": "Authoritative source explicitly confirms the primary report."},
+        {"status": 200, "body": authority_body},
     )
     direct_vm.mock_web(
         r".*standard\.example.*",
@@ -244,11 +244,7 @@ def test_v2_unavailable_winner_evidence_fails_closed(
 
     direct_vm.sender = direct_alice
     contract.close_bounty("bounty-v2")
-    mock_available_evidence(direct_vm)
-    direct_vm.mock_web(
-        r".*authority\.example.*",
-        {"status": 200, "body": ""},
-    )
+    mock_available_evidence(direct_vm, authority_body="")
     mock_winner(direct_vm)
     contract.resolve_bounty("bounty-v2")
 
@@ -281,14 +277,14 @@ def test_v2_participant_can_challenge_and_claim_is_blocked(
 
 
 def test_v2_outsider_cannot_challenge(
-    direct_vm, direct_deploy, direct_alice, direct_bob, direct_charlie, direct_david
+    direct_vm, direct_deploy, direct_alice, direct_bob, direct_charlie, direct_owner
 ):
     contract = direct_deploy("contracts/research_arena_v2.py")
     create_bounty(direct_vm, contract, direct_alice)
     add_two_submissions(direct_vm, contract, direct_bob, direct_charlie)
     resolve_primary(direct_vm, contract, direct_alice)
 
-    direct_vm.sender = direct_david
+    direct_vm.sender = direct_owner
     with direct_vm.expect_revert("participating researcher"):
         contract.challenge_resolution(
             "bounty-v2",
