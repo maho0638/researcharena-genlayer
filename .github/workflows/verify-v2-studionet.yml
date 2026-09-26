@@ -2,10 +2,6 @@ name: Verify V2 Studionet
 
 on:
   workflow_dispatch:
-  push:
-    branches: [researcharena-v2-protocol]
-    paths:
-      - ".github/canonical-v2-live-proof-trigger.txt"
 
 jobs:
   v2-live-proof:
