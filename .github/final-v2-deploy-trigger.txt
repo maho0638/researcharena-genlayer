@@ -1,5 +1,13 @@
 FINAL_V2_PROMOTION_TRIGGER
-predeploy_ci_run=36264482064
-predeploy_ci_head=040fdfe1843d23e3159ea1d757ee7c770b67483d
+predeploy_ci_run=36265213338
+predeploy_ci_head=068f0e7e7565b363242fbe1ef3fcdf0e1eb571b7
+predeploy_ci_result=success
 predeploy_direct_tests=38
+integration_py_compile=success
+frontend_build=success
+sdk_tests=success
+v1_lint=success
+v2_lint=success
 automatic_vercel_deploy=false
+retry_reason=previous live attempt reached phase2 close then Studionet nonce RPC returned transient 502 before phase2 resolve submission
+retry_policy=only retry pre-submit eth_getTransactionCount transient RPC failures; never replay unknown submitted transactions
