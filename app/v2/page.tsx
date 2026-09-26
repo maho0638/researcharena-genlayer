@@ -22,6 +22,12 @@ type BountyView = {
   winning_score?: string | number | bigint;
   runner_up_score?: string | number | bigint;
   reason_code?: string;
+  initial_recorded?: boolean;
+  initial_winner_submission_id?: string;
+  initial_winning_score?: string | number | bigint;
+  initial_runner_up_score?: string | number | bigint;
+  initial_reason_code?: string;
+  resolution_round?: string | number | bigint;
   winner_report_snapshot?: string;
   winner_source_1_snapshot?: string;
   winner_source_2_snapshot?: string;
@@ -446,6 +452,16 @@ export default function ResearchArenaV2Page() {
             </div>
             <h2>{bounty.question}</h2>
             <p>{bounty.rationale || "No settlement rationale yet."}</p>
+            {n(bounty.resolution_round) > 1 && (
+              <div className={styles.appealDiff}>
+                <div><small>INITIAL WINNER</small><b>{bounty.initial_winner_submission_id || "No winner"}</b></div>
+                <div><small>INITIAL SCORE</small><b>{n(bounty.initial_winning_score)}/100</b></div>
+                <div><small>INITIAL REASON</small><b>{bounty.initial_reason_code || "—"}</b></div>
+                <div><small>FRESH ROUND</small><b>#{n(bounty.resolution_round)}</b></div>
+                <div><small>CURRENT WINNER</small><b>{bounty.winner_submission_id || "No winner"}</b></div>
+                <div><small>CURRENT SCORE</small><b>{n(bounty.winning_score)}/100</b></div>
+              </div>
+            )}
             <div className={styles.metrics}>
               <div><small>Winner</small><b>{bounty.winner_submission_id || "No winner"}</b></div>
               <div><small>Score</small><b>{n(bounty.winning_score)}/100</b></div>
