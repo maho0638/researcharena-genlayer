@@ -1,0 +1,54 @@
+name: Production Smoke
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  production-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Wait for canonical V2 production release and verify public proof
+        run: |
+          set -euo pipefail
+          BASE="https://researcharena-genlayer.vercel.app"
+          EXPECTED_CONTRACT="0xf2dd996300750d880a7db948f41b639e1EA6624A"
+          READY=0
+
+          for attempt in $(seq 1 60); do
+            echo "production smoke attempt $attempt"
+
+            if curl -fsSL --connect-timeout 10 --max-time 30 "$BASE/v2-proof.json" -o /tmp/v2-proof.json; then
+              if EXPECTED_CONTRACT="$EXPECTED_CONTRACT" python3 - <<'PY'
+          import json
+          import os
+
+          with open("/tmp/v2-proof.json", "r", encoding="utf-8") as handle:
+              proof = json.load(handle)
+
+          expected = os.environ["EXPECTED_CONTRACT"].lower()
+          assert proof["v2"]["canonical_contract"].lower() == expected
+          assert proof["v2"]["workflow_run"] == 36269260931
+          assert proof["v2"]["source_match"] is True
+          assert proof["assertions"]["all_live_paths_verified"] is True
+          assert proof["assertions"]["deployed_source_match"] is True
+          assert proof["lifecycle"]["phase_1"]["final_status"] == "PAID"
+          assert proof["lifecycle"]["phase_2"]["final_status"] == "PAID"
+          assert proof["lifecycle"]["negative_path"]["final_status"] == "REFUNDED"
+          PY
+              then
+                if curl -fsSL --connect-timeout 10 --max-time 30 "$BASE/v2" -o /tmp/v2.html                   && grep -qi "ResearchArena" /tmp/v2.html                   && curl -fsSL --connect-timeout 10 --max-time 30 "$BASE/" -o /tmp/root.html                   && grep -qi "ResearchArena" /tmp/root.html; then
+                  READY=1
+                  break
+                fi
+              fi
+            fi
+
+            sleep 10
+          done
+
+          test "$READY" -eq 1
+          echo "RESEARCHARENA_V2_PRODUCTION_SMOKE=true"
+          echo "RESEARCHARENA_V2_PRODUCTION_CONTRACT=$EXPECTED_CONTRACT"
+          echo "RESEARCHARENA_V2_PRODUCTION_URL=$BASE/v2"
