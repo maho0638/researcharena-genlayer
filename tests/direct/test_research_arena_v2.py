@@ -81,9 +81,10 @@ def mock_winner(
     runner=35,
     reason="INDEPENDENT_CORROBORATION",
     winner_id="primary",
+    pattern=r"(?s).*neutral settlement judge for a competitive research market.*",
 ):
     direct_vm.mock_llm(
-        r"(?s).*neutral settlement judge for a competitive research market.*",
+        pattern,
         json.dumps(
             {
                 "winner_id": winner_id,
@@ -99,7 +100,10 @@ def resolve_primary(direct_vm, contract, creator, bounty_id="bounty-v2"):
     direct_vm.sender = creator
     contract.close_bounty(bounty_id)
     mock_available_evidence(direct_vm)
-    mock_winner(direct_vm)
+    mock_winner(
+        direct_vm,
+        pattern=r"(?s).*CHALLENGE CONTEXT:\s*No active challenge\..*",
+    )
     contract.resolve_bounty(bounty_id)
 
 
