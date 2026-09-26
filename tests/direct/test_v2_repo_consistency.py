@@ -41,6 +41,7 @@ def test_live_v2_workflow_requires_all_critical_markers():
         "RA_V2_TWO_PHASE_PROGRAM_VERIFIED=true",
         "RA_V2_RESEARCHER_STATS_VERIFIED=true",
         "RA_V2_NO_WINNER_VERIFIED=true",
+        "RA_V2_REFUNDED=true",
         "RA_V2_ALL_LIVE_PATHS_VERIFIED=true",
     )
     for marker in required:
@@ -60,7 +61,9 @@ def test_proof_manifest_requires_source_and_economic_paths():
     manifest = json.loads(read("docs/V2_PROOF_MANIFEST.template.json"))
     assertions = set(manifest["required_assertions"])
     assert "RA_V2_DEPLOYED_SOURCE_MATCH=true" in assertions
+    assert "RA_V2_AUDITABLE_APPEAL_VERIFIED=true" in assertions
     assert "RA_V2_NO_WINNER_VERIFIED=true" in assertions
+    assert "RA_V2_REFUNDED=true" in assertions
     assert "RA_V2_ALL_LIVE_PATHS_VERIFIED=true" in assertions
 
 

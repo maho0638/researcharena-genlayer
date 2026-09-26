@@ -257,6 +257,7 @@ def test_researcharena_v2_program_challenge_and_refund(default_account, accounts
         ]
     ).transact(wait_interval=10000, wait_retries=40)
     assert tx_execution_succeeded(bad_a)
+    print(f"RA_V2_BAD_SUBMIT_A_TX={bad_a.get('hash', '')}", flush=True)
 
     bad_b = researcher_b.submit_research(
         args=[
@@ -268,11 +269,13 @@ def test_researcharena_v2_program_challenge_and_refund(default_account, accounts
         ]
     ).transact(wait_interval=10000, wait_retries=40)
     assert tx_execution_succeeded(bad_b)
+    print(f"RA_V2_BAD_SUBMIT_B_TX={bad_b.get('hash', '')}", flush=True)
 
     close_bad = creator.close_bounty(args=[bad_id]).transact(
         wait_interval=10000, wait_retries=40
     )
     assert tx_execution_succeeded(close_bad)
+    print(f"RA_V2_BAD_CLOSE_TX={close_bad.get('hash', '')}", flush=True)
 
     bad_result = _resolve(creator, contract, bad_id)
     assert str(_field(bad_result, "status")) == "REJECTED"
@@ -291,5 +294,6 @@ def test_researcharena_v2_program_challenge_and_refund(default_account, accounts
     print(f"RA_V2_REJECTED_REFUND_TX={refund.get('hash', '')}", flush=True)
     refunded = _wait_status(contract, bad_id, {"REFUNDED"})
     assert bool(_field(refunded, "reward_claimed")) is True
+    print("RA_V2_REFUNDED=true", flush=True)
 
     print("RA_V2_ALL_LIVE_PATHS_VERIFIED=true", flush=True)
