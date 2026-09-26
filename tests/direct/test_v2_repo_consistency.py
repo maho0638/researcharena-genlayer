@@ -58,7 +58,7 @@ def test_deployed_source_verifier_targets_exact_v2_contract():
 
 
 def test_proof_manifest_requires_source_and_economic_paths():
-    manifest = json.loads(read("docs/V2_PROOF_MANIFEST.template.json"))
+    manifest = json.loads(read("docs/V2_PROOF_MANIFEST.json"))
     assertions = set(manifest["required_assertions"])
     assert "RA_V2_DEPLOYED_SOURCE_MATCH=true" in assertions
     assert "RA_V2_AUDITABLE_APPEAL_VERIFIED=true" in assertions

@@ -61,7 +61,7 @@ Reviewer docs:
 
 - `docs/MILESTONE_V2.md`
 - `docs/V2_VERIFICATION.md`
-- `docs/V2_PROOF_MANIFEST.template.json`
+- `docs/V2_PROOF_MANIFEST.json`
 - `.github/workflows/verify-v2-studionet.yml`
 
 ## V1 baseline verified live Studionet deployment
