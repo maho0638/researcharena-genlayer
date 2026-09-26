@@ -1,0 +1,4 @@
+DEBUG_V2_FAILED_TX
+tx=0xd83ae6ca70290ddd6f9d5b920a2be3d44c7d2c91e290b1b2831a9dd00d81aa01
+contract=0xb0DEE3Edd4DD090693B7179D432A0ea492D9063B
+purpose=read-only diagnosis; no deployment and no write transaction

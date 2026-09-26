@@ -1,0 +1,37 @@
+name: Debug V2 Failed Tx Once
+
+on:
+  push:
+    branches: [researcharena-v2-protocol]
+    paths:
+      - ".github/debug-v2-tx-trigger.txt"
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Inspect failed Studionet transaction
+        run: |
+          python - <<'PY'
+          import json
+          from genlayer_py import create_client
+          from genlayer_py.chains import studionet
+
+          tx_hash = "0xd83ae6ca70290ddd6f9d5b920a2be3d44c7d2c91e290b1b2831a9dd00d81aa01"
+          client = create_client(chain=studionet)
+
+          tx = client.get_transaction(tx_hash)
+          print("DEBUG_TX=" + json.dumps(tx, default=str, sort_keys=True), flush=True)
+
+          try:
+              trace = client.debug_trace_transaction(tx_hash, round=0)
+              print("DEBUG_TRACE=" + json.dumps(trace, default=str, sort_keys=True), flush=True)
+          except Exception as exc:
+              print("DEBUG_TRACE_ERROR=" + repr(exc), flush=True)
+          PY
