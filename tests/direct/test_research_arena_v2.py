@@ -382,3 +382,41 @@ def test_v2_program_progress_aggregates_settlement(
     assert progress.total_reward == 2400
     assert progress.settled_reward == 1100
     assert contract.is_phase_unlocked("phase-two") is True
+
+
+def test_v2_stalled_recovery_uses_state_transition_time(
+    direct_vm, direct_deploy, direct_alice, direct_bob, direct_charlie
+):
+    contract = direct_deploy("contracts/research_arena_v2.py")
+    create_bounty(direct_vm, contract, direct_alice)
+    add_two_submissions(direct_vm, contract, direct_bob, direct_charlie)
+
+    direct_vm.sender = direct_alice
+    contract.close_bounty("bounty-v2")
+    bounty = contract.get_bounty("bounty-v2")
+    assert int(bounty.closed_at) > 0
+
+    with direct_vm.expect_revert("grace period"):
+        contract.recover_stalled_bounty("bounty-v2")
+
+
+def test_v2_challenge_records_fresh_stalled_timestamp(
+    direct_vm, direct_deploy, direct_alice, direct_bob, direct_charlie
+):
+    contract = direct_deploy("contracts/research_arena_v2.py")
+    create_bounty(direct_vm, contract, direct_alice)
+    add_two_submissions(direct_vm, contract, direct_bob, direct_charlie)
+    resolve_primary(direct_vm, contract, direct_alice)
+
+    direct_vm.sender = direct_charlie
+    contract.challenge_resolution(
+        "bounty-v2",
+        "The live evidence should be re-fetched before any economic settlement.",
+    )
+    bounty = contract.get_bounty("bounty-v2")
+    assert bounty.status == "CHALLENGED"
+    assert int(bounty.challenged_at) > 0
+
+    direct_vm.sender = direct_alice
+    with direct_vm.expect_revert("grace period"):
+        contract.recover_stalled_bounty("bounty-v2")
