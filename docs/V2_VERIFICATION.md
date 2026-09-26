@@ -22,7 +22,7 @@ B. Evidence-bound winner proof
 - Three HTTPS URLs per submission remain immutable after entry.
 - Winner snapshots are stored on-chain.
 - Winner score is at least 70.
-- Leader/validator winner and snapshots converge.
+- Leader and validators independently refetch the immutable evidence URLs; the material winner/no-winner outcome and threshold validity converge. Snapshot text is stored for audit but is not required to be byte-identical across dynamic webpages.
 
 C. No-winner proof
 - Weak or unavailable evidence produces REJECTED.
