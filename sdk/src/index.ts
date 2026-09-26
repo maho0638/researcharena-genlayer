@@ -15,6 +15,17 @@ export type Bounty = {
   winning_score?: bigint | number | string;
   reason_code?: string;
   reward_claimed?: boolean;
+  challenge_count?: bigint | number | string;
+  challenge_note?: string;
+  resolution_round?: bigint | number | string;
+  initial_recorded?: boolean;
+  initial_winner_submission_id?: string;
+  initial_winning_score?: bigint | number | string;
+  initial_runner_up_score?: bigint | number | string;
+  initial_reason_code?: string;
+  winner_report_snapshot?: string;
+  winner_source_1_snapshot?: string;
+  winner_source_2_snapshot?: string;
   policy_version?: string;
 };
 
@@ -26,12 +37,27 @@ export function auditBounty(bounty: Bounty) {
   const score = Number(bounty.winning_score ?? 0);
   const settled = ["PAID", "REFUNDED"].includes(status);
   const resolved = ["RESOLVED", "REJECTED", "CHALLENGED", "PAID", "REFUNDED"].includes(status);
+  const winnerState = ["RESOLVED", "PAID"].includes(status);
+  const rejectionState = status === "REJECTED";
+  const round = Number(bounty.resolution_round ?? 0);
+  const challengeCount = Number(bounty.challenge_count ?? 0);
   const checks = {
     v2Policy: bounty.policy_version === RESEARCHARENA_V2_POLICY,
-    winnerThreshold: status !== "RESOLVED" || score >= MIN_WINNER_SCORE,
+    winnerThreshold: !winnerState || score >= MIN_WINNER_SCORE,
+    winnerStateHasWinner: !winnerState || Boolean(bounty.winner_submission_id),
+    rejectedHasNoWinner: !rejectionState || !bounty.winner_submission_id,
     paidWasClaimed: status !== "PAID" || bounty.reward_claimed === true,
     refundWasSettled: status !== "REFUNDED" || bounty.reward_claimed === true,
     resolvedHasReason: !resolved || Boolean(bounty.reason_code),
+    resolutionRoundPresent: !resolved || round >= 1,
+    challengedRoundAuditable:
+      round <= 1 ||
+      (
+        challengeCount >= 1 &&
+        bounty.initial_recorded === true &&
+        Boolean(bounty.initial_reason_code) &&
+        Boolean(bounty.challenge_note)
+      ),
     terminalIsSettled: !settled || bounty.reward_claimed === true,
   };
   return { ok: Object.values(checks).every(Boolean), checks };
@@ -160,5 +186,29 @@ export const resolveChallengeRequest = (
 export const claimRequest = (address: ContractAddress, bountyId: string) => ({
   address,
   functionName: "claim_reward",
+  args: [bountyId],
+} as const);
+
+export const closeBountyRequest = (address: ContractAddress, bountyId: string) => ({
+  address,
+  functionName: "close_bounty",
+  args: [bountyId],
+} as const);
+
+export const refundRejectedRequest = (address: ContractAddress, bountyId: string) => ({
+  address,
+  functionName: "refund_rejected",
+  args: [bountyId],
+} as const);
+
+export const refundUnfilledRequest = (address: ContractAddress, bountyId: string) => ({
+  address,
+  functionName: "refund_unfilled_bounty",
+  args: [bountyId],
+} as const);
+
+export const recoverStalledRequest = (address: ContractAddress, bountyId: string) => ({
+  address,
+  functionName: "recover_stalled_bounty",
   args: [bountyId],
 } as const);
