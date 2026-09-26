@@ -1,0 +1,51 @@
+name: Resume V2 Candidate Once
+
+on:
+  push:
+    branches: [researcharena-v2-protocol]
+    paths:
+      - ".github/resume-v2-candidate-trigger.txt"
+
+jobs:
+  resume-v2-candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - run: pip install -r requirements.txt
+      - run: npm install
+
+      - name: Resume exact deployed V2 candidate without redeploying
+        run: |
+          set -euo pipefail
+          gltest tests/integration/test_studionet_v2_resume.py -v -s --network studionet | tee /tmp/v2-resume.log
+          grep -q 'RA_V2_RESUME_EXISTING_CONTRACT=true' /tmp/v2-resume.log
+          grep -q 'RA_V2_PHASE1_PAID_WITH_CHALLENGE_HISTORY=true' /tmp/v2-resume.log
+          grep -q 'RA_V2_EVIDENCE_SNAPSHOTS_STORED=true' /tmp/v2-resume.log
+          grep -q 'RA_V2_AUDITABLE_APPEAL_VERIFIED=true' /tmp/v2-resume.log
+          grep -q 'RA_V2_PHASE2_UNLOCKED_AFTER_PHASE1_PAID=true' /tmp/v2-resume.log
+          grep -q 'RA_V2_PHASE2_RESOLVED=true' /tmp/v2-resume.log
+          grep -q 'RA_V2_TWO_PHASE_PROGRAM_VERIFIED=true' /tmp/v2-resume.log
+          grep -q 'RA_V2_RESEARCHER_STATS_VERIFIED=true' /tmp/v2-resume.log
+          grep -q 'RA_V2_NO_WINNER_VERIFIED=true' /tmp/v2-resume.log
+          grep -q 'RA_V2_REFUNDED=true' /tmp/v2-resume.log
+          grep -q 'RA_V2_ALL_LIVE_PATHS_VERIFIED=true' /tmp/v2-resume.log
+
+      - name: Verify deployed source equality on same candidate
+        env:
+          CONTRACT_ADDRESS: 0x55e860F07f9ab084a805E603d7dd738466675a3F
+          CONTRACT_SOURCE_PATH: contracts/research_arena_v2.py
+        run: node scripts/verify-v2-deployed-source.mjs
+
+      - name: Upload resumed reviewer proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: researcharena-v2-resumed-live-proof
+          path: /tmp/v2-resume.log
+          if-no-files-found: error
