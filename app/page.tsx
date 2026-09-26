@@ -452,6 +452,7 @@ export default function Home() {
           <a href="#proof">Live proof</a>
           <a href="#app">Workspace</a>
           <a href="#why">Why GenLayer</a>
+          <a href="/v2">V2 protocol</a>
           <button className="wallet" onClick={connectWallet} disabled={busy}>
             <span className="walletDot" />
             {account ? short(account) : "Connect wallet"}

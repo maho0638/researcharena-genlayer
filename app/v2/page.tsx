@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { formatGen, parseGen, readClient, sendWrite, walletClient } from "../../lib/genlayer";
 import styles from "./v2.module.css";
 
@@ -60,7 +60,12 @@ type ResearcherStats = {
   total_earned?: string | number | bigint;
 };
 
-const RAW_V2_ADDRESS = process.env.NEXT_PUBLIC_RESEARCHARENA_V2_ADDRESS || "";
+const CANONICAL_V2_ADDRESS = "0xf2dd996300750d880a7db948f41b639e1EA6624A";
+const CANONICAL_PROGRAM = "researcharena-v2-program";
+const CANONICAL_PHASE = "ra-v2-evidence-phase";
+const CANONICAL_WORKFLOW = "https://github.com/maho0638/researcharena-genlayer/actions/runs/36269260931";
+const RAW_V2_ADDRESS =
+  process.env.NEXT_PUBLIC_RESEARCHARENA_V2_ADDRESS || CANONICAL_V2_ADDRESS;
 const V2_CONFIGURED = /^0x[a-fA-F0-9]{40}$/.test(RAW_V2_ADDRESS);
 const POLICY = "RA_V2_RESEARCH_PROGRAMS";
 const explorerBase = "https://explorer-studio.genlayer.com";
@@ -121,14 +126,14 @@ export default function ResearchArenaV2Page() {
   const [source1, setSource1] = useState("");
   const [source2, setSource2] = useState("");
 
-  const [inspectId, setInspectId] = useState("");
+  const [inspectId, setInspectId] = useState(CANONICAL_PHASE);
   const [bounty, setBounty] = useState<BountyView | null>(null);
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [challengeNote, setChallengeNote] = useState(
     "Please refetch the public evidence and run one fresh consensus pass before settlement."
   );
 
-  const [inspectProgramId, setInspectProgramId] = useState("research-program-1");
+  const [inspectProgramId, setInspectProgramId] = useState(CANONICAL_PROGRAM);
   const [program, setProgram] = useState<ProgramProgress | null>(null);
   const [programPhases, setProgramPhases] = useState<BountyView[]>([]);
 
@@ -142,6 +147,12 @@ export default function ResearchArenaV2Page() {
     if (bounty.status === "REJECTED") return !bounty.winner_submission_id;
     return true;
   }, [bounty]);
+
+  useEffect(() => {
+    if (!V2_CONFIGURED) return;
+    void loadBounty(CANONICAL_PHASE);
+    void loadProgram(CANONICAL_PROGRAM);
+  }, []);
 
   async function connect() {
     try {
@@ -361,8 +372,11 @@ export default function ResearchArenaV2Page() {
         <a href="/" className={styles.brand}>ResearchArena</a>
         <div className={styles.headerRight}>
           <span className={V2_CONFIGURED ? styles.live : styles.pending}>
-            {V2_CONFIGURED ? "V2 CONTRACT CONFIGURED" : "PRE-DEPLOY VERIFICATION"}
+            {V2_CONFIGURED ? "V2 LIVE · SOURCE VERIFIED" : "PRE-DEPLOY VERIFICATION"}
           </span>
+          <a className={styles.proofLink} href={CANONICAL_WORKFLOW} target="_blank" rel="noreferrer">
+            Canonical proof ↗
+          </a>
           <button onClick={connect} disabled={busy}>
             {account ? short(account) : "Connect wallet"}
           </button>
@@ -378,7 +392,7 @@ export default function ResearchArenaV2Page() {
         </p>
         <div className={styles.chips}>
           <span>Policy {POLICY}</span><span>Winner threshold 70/100</span><span>Max 8 phases</span>
-          <span>1 challenge</span><span>24h stalled recovery</span>
+          <span>1 challenge</span><span>24h stalled recovery</span><span>Canonical Studionet proof ✓</span>
         </div>
         {!V2_CONFIGURED && (
           <div className={styles.guard}>

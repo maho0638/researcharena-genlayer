@@ -1,0 +1,81 @@
+{
+  "schema": "researcharena-v2-proof-v1",
+  "policy": "RA_V2_RESEARCH_PROGRAMS",
+  "verified_at": "2026-09-26",
+  "baseline": {
+    "version": "V1",
+    "accepted_points": 380,
+    "contract": "0x3877C0a69a42a01c9c6a4708aCca25bA5573814C",
+    "workflow_run": 35918043606
+  },
+  "v2": {
+    "canonical_contract": "0xf2dd996300750d880a7db948f41b639e1EA6624A",
+    "explorer": "https://explorer-studio.genlayer.com/address/0xf2dd996300750d880a7db948f41b639e1EA6624A",
+    "predeploy_ci_run": 36268953560,
+    "workflow_run": 36269260931,
+    "direct_tests_passed": 42,
+    "deploy_input_sha256": "c5f6981a2d1660cf16de3a070640885e0f96fe499486a022556389b2aff9884f",
+    "normalized_deployed_source_sha256": "a1c3807c5a2fbe31fa1a0a0cca655f5816e735292dab81700f3295ca19396eba",
+    "normalized_repository_source_sha256": "a1c3807c5a2fbe31fa1a0a0cca655f5816e735292dab81700f3295ca19396eba",
+    "source_match": true,
+    "production_url": "PENDING_FINAL_PRODUCTION_DEPLOY"
+  },
+  "lifecycle": {
+    "phase_1": {
+      "id": "ra-v2-evidence-phase",
+      "final_status": "PAID",
+      "initial_score": 96,
+      "initial_reason": "RUBRIC_FIT",
+      "challenged": true,
+      "challenge_reresolved": true,
+      "create_tx": "0x93e68875bb65008b95f43aaf7f7b8cb0363a6ea6a05e12e7d2c2c329250c2acf",
+      "resolve_tx": "0x1319d7934509da5f15422491df1deda6cffde94f7ac3115df2d339853dc317e6",
+      "challenge_tx": "0xefe48f84a4961f9486cfc1ee4d579e91b865be79009b0b4b47de36f7898d8632",
+      "reresolve_tx": "0x9fdc4e5f7907e2144a6a1752b2a6734f7fab0e4063c37004f7713dd652d713f7",
+      "claim_tx": "0x70de023e84813be5267e79ca5b21dedb4e977b3c6d74f557986b299dbb20082b"
+    },
+    "phase_2": {
+      "id": "ra-v2-synthesis-phase",
+      "locked_until_phase_1_paid": true,
+      "final_status": "PAID",
+      "score": 85,
+      "reason": "DIRECTNESS",
+      "create_tx": "0x21e54db046b08432b3fb5cb9c1f8eea71c4ba5b7ee1fdc0a23f69374b80e49eb",
+      "resolve_tx": "0x539ee0d448d52fa618821eee87ed085e7a7710a3c897d3800e2df5e58800409f",
+      "claim_tx": "0x9fdcf842c2100bd6a0dcd5bdc59e0424c0dc064f229fb85f154b9384448b1484"
+    },
+    "negative_path": {
+      "id": "ra-v2-no-winner-refund",
+      "resolution_status": "REJECTED",
+      "reason": "SOURCE_UNAVAILABLE",
+      "final_status": "REFUNDED",
+      "resolve_tx": "0xcffe1830184ca62727bbd29853b793237dffc402f9e6ed40b5dc9c77733ab2be",
+      "refund_tx": "0xc52ff8ceda1159d90f1f254fc7c48c1aed4d98233c804d306201213986b3e2a2"
+    }
+  },
+  "assertions": {
+    "deploy_input_match": true,
+    "phase_2_locked_before_phase_1_paid": true,
+    "evidence_snapshots_stored": true,
+    "auditable_appeal_verified": true,
+    "phase_2_unlocked_after_phase_1_paid": true,
+    "two_phase_program_verified": true,
+    "researcher_stats_verified": true,
+    "no_winner_verified": true,
+    "refunded": true,
+    "all_live_paths_verified": true,
+    "deployed_source_match": true
+  },
+  "historical_diagnostics": [
+    {
+      "contract": "0x55e860F07f9ab084a805E603d7dd738466675a3F",
+      "canonical": false,
+      "issue": "Studionet HTTP 502 before phase-2 resolve submission"
+    },
+    {
+      "contract": "0xb0DEE3Edd4DD090693B7179D432A0ea492D9063B",
+      "canonical": false,
+      "issue": "phase-2 resolve canceled NO_MAJORITY; led to material-equivalence hardening"
+    }
+  ]
+}

@@ -19,6 +19,14 @@
 }
 .brand { color: #effff7; font-size: 18px; font-weight: 900; letter-spacing: -.03em; }
 .headerRight { display: flex; align-items: center; gap: 12px; }
+.proofLink {
+  color: #bff85e;
+  font-size: 10px;
+  font-weight: 900;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.proofLink:hover { text-decoration: underline; }
 .header button, .inspect button, .challenge button {
   border: 1px solid rgba(194, 255, 83, .25);
   border-radius: 10px;

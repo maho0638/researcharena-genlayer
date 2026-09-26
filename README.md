@@ -28,7 +28,7 @@ The project is not a chatbot or an LLM wrapper. The consensus result determines 
 
 ## V2 milestone — evidence-bound research programs
 
-The `researcharena-v2-protocol` branch is a protocol milestone beyond the accepted V1 deployment. V1 remains the verified production baseline until every V2 promotion gate passes.
+The `researcharena-v2-protocol` branch is a protocol milestone beyond the accepted V1 deployment. All V2 predeploy gates and the canonical Studionet lifecycle proof now pass.
 
 V2 adds:
 
@@ -45,6 +45,18 @@ V2 adds:
 
 **Promotion rule:** automatic Vercel deployment is disabled on the V2 development branch. The final contract address and production UI are promoted only after CI, direct tests, lint, SDK tests, frontend build, live economic-path proof and deployed-source equality all pass.
 
+
+### Canonical V2 Studionet proof
+
+- **Contract:** `0xf2dd996300750d880a7db948f41b639e1EA6624A`
+- **Explorer:** https://explorer-studio.genlayer.com/address/0xf2dd996300750d880a7db948f41b639e1EA6624A
+- **Canonical workflow:** https://github.com/maho0638/researcharena-genlayer/actions/runs/36269260931
+- **Predeploy CI:** https://github.com/maho0638/researcharena-genlayer/actions/runs/36268953560
+- **Direct/repository tests:** 42 passed
+- **Normalized deployed/repository source SHA-256:** `a1c3807c5a2fbe31fa1a0a0cca655f5816e735292dab81700f3295ca19396eba`
+- **Source equality:** `RA_V2_DEPLOYED_SOURCE_MATCH=true`
+- **Live result:** two ordered phases both resolved and paid; one challenge was re-resolved; an unavailable-evidence market was rejected and refunded.
+
 Reviewer docs:
 
 - `docs/MILESTONE_V2.md`
@@ -52,7 +64,7 @@ Reviewer docs:
 - `docs/V2_PROOF_MANIFEST.template.json`
 - `.github/workflows/verify-v2-studionet.yml`
 
-## Verified live Studionet deployment
+## V1 baseline verified live Studionet deployment
 
 - **Network:** GenLayer Studionet
 - **Chain ID:** 61999
@@ -106,10 +118,12 @@ Consensus rationale:
 
 The repository includes:
 
-- nine direct contract tests
-- GenVM lint and validation
+- 42 direct/repository consistency tests across the V1 baseline and V2 milestone
+- explicit validator-equivalence tests for dynamic web snapshots, winner disagreement, threshold failure and no-winner agreement
+- GenVM lint and validation for both V1 and V2 contracts
+- TypeScript SDK build/tests
 - Next.js production build
-- live Studionet end-to-end integration workflow
+- canonical live Studionet multi-phase, challenge, payout and refund verification
 
 ## Source map
 
