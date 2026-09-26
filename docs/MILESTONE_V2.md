@@ -67,3 +67,21 @@ The Portal score is not assumed or guaranteed. V2 is structured so a steward can
 - source provenance proves the deployed contract is the repository contract;
 - the V1 accepted baseline remains untouched so the milestone delta is auditable;
 - Vercel deployment is deliberately disabled during development and happens only after the full promotion checklist passes.
+
+
+## Consensus hardening after live failure diagnosis
+
+A pre-production Studionet proof exposed two distinct external/consensus failure modes before V2 promotion:
+
+- one run hit a GenLayer RPC HTTP 502 before a phase-2 resolution transaction was submitted;
+- a controlled retry submitted phase-2 resolution, but that transaction was canceled as `NO_MAJORITY` after recovery cycles.
+
+The second result showed that byte-for-byte equality of independently rendered web snapshots was too strict for live public pages. V2 now follows GenLayer's material-equivalence pattern: every validator independently refetches the immutable evidence URLs and independently re-runs the research judgment, while consensus compares the stable economic decision (same winner / no-winner outcome and threshold validity). The leader's fetched snapshots are still stored on-chain as audit evidence, but harmless dynamic page-text differences no longer veto an otherwise identical settlement.
+
+Direct validator tests explicitly cover:
+- same winner with changed live page text -> agree;
+- different winner -> disagree;
+- winner below 70/100 -> disagree;
+- no-winner with a different allowed failure classification -> agree.
+
+The failed pre-production candidate addresses are historical diagnostics only and are not canonical V2 deployments.

@@ -610,3 +610,136 @@ def test_v2_noncreator_cannot_recover_closed_bounty(
     direct_vm.sender = direct_bob
     with direct_vm.expect_revert("Only the bounty creator can recover"):
         contract.recover_stalled_bounty("bounty-v2")
+
+
+def test_v2_validator_accepts_same_winner_with_nonidentical_live_snapshots(
+    direct_vm, direct_deploy, direct_alice, direct_bob, direct_charlie
+):
+    contract = direct_deploy("contracts/research_arena_v2.py")
+    create_bounty(direct_vm, contract, direct_alice)
+    add_two_submissions(direct_vm, contract, direct_bob, direct_charlie)
+
+    direct_vm.sender = direct_alice
+    contract.close_bounty("bounty-v2")
+
+    # Leader sees one valid rendering of the public pages.
+    mock_available_evidence(direct_vm)
+    mock_winner(direct_vm, score=96, runner=35)
+    contract.resolve_bounty("bounty-v2")
+
+    # Validator independently refetches the same immutable URLs. Harmless page
+    # text changed, but the material research winner remains the same.
+    direct_vm.clear_mocks()
+    direct_vm.mock_web(
+        r".*report-a\.example.*",
+        {"status": 200, "body": "Primary report directly answers the question. Updated footer text."},
+    )
+    direct_vm.mock_web(
+        r".*authority\.example.*",
+        {"status": 200, "body": "Authoritative source confirms the primary report. Updated timestamp."},
+    )
+    direct_vm.mock_web(
+        r".*standard\.example.*",
+        {"status": 200, "body": "Independent source corroborates the primary report. Minor page revision."},
+    )
+    direct_vm.mock_web(
+        r".*report-b\.example.*",
+        {"status": 200, "body": "Runner report remains generic and weakly supported."},
+    )
+    direct_vm.mock_web(
+        r".*generic-a\.example.*",
+        {"status": 200, "body": "Generic page with unrelated layout changes."},
+    )
+    direct_vm.mock_web(
+        r".*generic-b\.example.*",
+        {"status": 200, "body": "Another generic page with a changed footer."},
+    )
+    mock_winner(
+        direct_vm,
+        score=91,
+        runner=40,
+        reason="RUBRIC_FIT",
+        winner_id="primary",
+    )
+    assert direct_vm.run_validator() is True
+
+
+def test_v2_validator_rejects_different_material_winner(
+    direct_vm, direct_deploy, direct_alice, direct_bob, direct_charlie
+):
+    contract = direct_deploy("contracts/research_arena_v2.py")
+    create_bounty(direct_vm, contract, direct_alice)
+    add_two_submissions(direct_vm, contract, direct_bob, direct_charlie)
+
+    direct_vm.sender = direct_alice
+    contract.close_bounty("bounty-v2")
+    mock_available_evidence(direct_vm)
+    mock_winner(direct_vm, score=96, runner=35, winner_id="primary")
+    contract.resolve_bounty("bounty-v2")
+
+    direct_vm.clear_mocks()
+    mock_available_evidence(direct_vm)
+    mock_winner(
+        direct_vm,
+        score=93,
+        runner=88,
+        reason="RUBRIC_FIT",
+        winner_id="runner",
+    )
+    assert direct_vm.run_validator() is False
+
+
+def test_v2_validator_rejects_same_winner_below_threshold(
+    direct_vm, direct_deploy, direct_alice, direct_bob, direct_charlie
+):
+    contract = direct_deploy("contracts/research_arena_v2.py")
+    create_bounty(direct_vm, contract, direct_alice)
+    add_two_submissions(direct_vm, contract, direct_bob, direct_charlie)
+
+    direct_vm.sender = direct_alice
+    contract.close_bounty("bounty-v2")
+    mock_available_evidence(direct_vm)
+    mock_winner(direct_vm, score=96, runner=35, winner_id="primary")
+    contract.resolve_bounty("bounty-v2")
+
+    direct_vm.clear_mocks()
+    mock_available_evidence(direct_vm)
+    mock_winner(
+        direct_vm,
+        score=64,
+        runner=60,
+        reason="RUBRIC_FIT",
+        winner_id="primary",
+    )
+    assert direct_vm.run_validator() is False
+
+
+def test_v2_validator_accepts_materially_same_no_winner_with_different_failure_reason(
+    direct_vm, direct_deploy, direct_alice, direct_bob, direct_charlie
+):
+    contract = direct_deploy("contracts/research_arena_v2.py")
+    create_bounty(direct_vm, contract, direct_alice)
+    add_two_submissions(direct_vm, contract, direct_bob, direct_charlie)
+
+    direct_vm.sender = direct_alice
+    contract.close_bounty("bounty-v2")
+    mock_available_evidence(direct_vm)
+    mock_winner(
+        direct_vm,
+        score=55,
+        runner=48,
+        reason="EVIDENCE_GAP",
+        winner_id="",
+    )
+    contract.resolve_bounty("bounty-v2")
+
+    direct_vm.clear_mocks()
+    mock_available_evidence(direct_vm)
+    mock_winner(
+        direct_vm,
+        score=50,
+        runner=45,
+        reason="CONTRADICTORY_EVIDENCE",
+        winner_id="",
+    )
+    assert direct_vm.run_validator() is True

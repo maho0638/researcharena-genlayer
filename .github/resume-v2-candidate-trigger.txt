@@ -1,5 +1,0 @@
-RESUME_EXISTING_V2_CANDIDATE
-candidate=0x55e860F07f9ab084a805E603d7dd738466675a3F
-original_live_run=36264783013
-failure=transient_genlayer_rpc_http_502_before_phase2_resolve_send
-redeploy=false

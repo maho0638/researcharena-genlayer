@@ -68,3 +68,12 @@ The final milestone submission should include:
 7. Only then is the final production deployment performed.
 
 No production deployment is used as a development or debugging loop.
+
+
+## Diagnosed pre-production failures
+
+Do not treat these diagnostic candidates as canonical:
+- `0x55e860F07f9ab084a805E603d7dd738466675a3F` — live proof was interrupted by a Studionet HTTP 502 before phase-2 resolve submission.
+- `0xb0DEE3Edd4DD090693B7179D432A0ea492D9063B` — phase-2 resolve transaction `0xd83ae6ca70290ddd6f9d5b920a2be3d44c7d2c91e290b1b2831a9dd00d81aa01` was canceled as `NO_MAJORITY` / `max_recovery_cycles_exceeded`.
+
+The second failure led to the material-equivalence validator hardening. A new canonical deployment must be created only after the updated direct validator tests, GenVM lint, SDK tests, and frontend build all pass.

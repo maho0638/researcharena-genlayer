@@ -606,18 +606,32 @@ Return JSON only:
                     return False
 
                 if leader["winner_id"]:
+                    # The URLs are immutable contract state and each validator
+                    # independently refetches them in leader_fn().  Snapshot text
+                    # itself is audit evidence, not a stable decision field:
+                    # public pages can contain harmless dynamic text that differs
+                    # across nodes.  Requiring byte-identical snapshots caused
+                    # valid live resolutions to exhaust recovery cycles.
+                    #
+                    # Economic consensus therefore requires the stable material
+                    # outcome: same winner, complete evidence on both nodes, and
+                    # both independent scores above the settlement threshold.
                     return (
                         leader["reason_code"] in SUCCESS_REASONS
                         and validator["reason_code"] in SUCCESS_REASONS
-                        and leader["report_snapshot"] == validator["report_snapshot"]
-                        and leader["source_1_snapshot"]
-                        == validator["source_1_snapshot"]
-                        and leader["source_2_snapshot"]
-                        == validator["source_2_snapshot"]
+                        and bool(leader["report_snapshot"])
+                        and bool(leader["source_1_snapshot"])
+                        and bool(leader["source_2_snapshot"])
+                        and bool(validator["report_snapshot"])
+                        and bool(validator["source_1_snapshot"])
+                        and bool(validator["source_2_snapshot"])
                         and int(leader["winner_score"]) >= MIN_WINNER_SCORE
                         and int(validator["winner_score"]) >= MIN_WINNER_SCORE
                     )
 
+                # No-winner consensus is also material rather than prose-exact:
+                # validators may classify the same failed settlement as an
+                # evidence gap, unavailable source, or contradiction.
                 return (
                     leader["reason_code"] in FAILURE_REASONS
                     and validator["reason_code"] in FAILURE_REASONS
