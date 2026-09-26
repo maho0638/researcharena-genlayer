@@ -572,23 +572,20 @@ Return JSON only:
                     leader_result.calldata, valid_ids
                 )
 
+                # Research ranking is subjective, so validators must agree on
+                # the material settlement outcome rather than reproduce the
+                # leader's exact prose-like reason or numeric score. Economic
+                # consensus still requires the same winner and the same frozen
+                # public evidence, and every validator must independently place
+                # that winner above the minimum settlement threshold.
                 if leader["winner_id"] != validator["winner_id"]:
-                    return False
-                if leader["reason_code"] != validator["reason_code"]:
-                    return False
-                if abs(
-                    int(leader["winner_score"]) - int(validator["winner_score"])
-                ) > 10:
-                    return False
-                if abs(
-                    int(leader["runner_up_score"])
-                    - int(validator["runner_up_score"])
-                ) > 10:
                     return False
 
                 if leader["winner_id"]:
                     return (
-                        leader["report_snapshot"] == validator["report_snapshot"]
+                        leader["reason_code"] in SUCCESS_REASONS
+                        and validator["reason_code"] in SUCCESS_REASONS
+                        and leader["report_snapshot"] == validator["report_snapshot"]
                         and leader["source_1_snapshot"]
                         == validator["source_1_snapshot"]
                         and leader["source_2_snapshot"]
@@ -597,7 +594,10 @@ Return JSON only:
                         and int(validator["winner_score"]) >= MIN_WINNER_SCORE
                     )
 
-                return leader["reason_code"] in FAILURE_REASONS
+                return (
+                    leader["reason_code"] in FAILURE_REASONS
+                    and validator["reason_code"] in FAILURE_REASONS
+                )
             except Exception:
                 return False
 
