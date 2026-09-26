@@ -64,6 +64,7 @@ class Bounty:
     challenge_count: u256
     challenge_note: str
     created_at: u256
+    closed_at: u256
     resolved_at: u256
     challenged_at: u256
     settled_at: u256
@@ -261,6 +262,7 @@ class ResearchArenaV2(gl.Contract):
             challenge_count=u256(0),
             challenge_note="",
             created_at=u256(now),
+            closed_at=u256(0),
             resolved_at=u256(0),
             challenged_at=u256(0),
             settled_at=u256(0),
@@ -400,6 +402,7 @@ class ResearchArenaV2(gl.Contract):
                 "Cannot close early until the submission cap is reached"
             )
         bounty.status = "CLOSED"
+        bounty.closed_at = u256(self._now())
 
     def _normalize_verdict(self, result: dict, valid_ids) -> dict:
         winner_id = str(result.get("winner_id", "")).strip()
@@ -799,7 +802,14 @@ Return JSON only:
             raise gl.vm.UserError("Only the bounty creator can recover")
         if bounty.status not in ("CLOSED", "CHALLENGED"):
             raise gl.vm.UserError("Bounty is not stalled")
-        if self._now() <= int(bounty.deadline) + RESOLUTION_GRACE_SECONDS:
+        stalled_since = (
+            int(bounty.challenged_at)
+            if bounty.status == "CHALLENGED"
+            else int(bounty.closed_at)
+        )
+        if stalled_since <= 0:
+            raise gl.vm.UserError("Missing stalled-state timestamp")
+        if self._now() <= stalled_since + RESOLUTION_GRACE_SECONDS:
             raise gl.vm.UserError("Resolution grace period has not elapsed")
         return self._refund(bounty)
 
