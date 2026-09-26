@@ -477,3 +477,6 @@ def test_v2_challenge_preserves_initial_verdict_and_records_new_round(
     assert bounty.winning_score == 91
     assert bounty.reason_code == "RUBRIC_FIT"
     assert "Runner report" in bounty.winner_report_snapshot
+    assert bounty.challenge_note == (
+        "The runner evidence should be freshly checked against the same precommitted rubric."
+    )

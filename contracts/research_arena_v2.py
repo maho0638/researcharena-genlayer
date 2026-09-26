@@ -656,7 +656,6 @@ Return JSON only:
         bounty.winner_source_1_snapshot = source_1_snapshot
         bounty.winner_source_2_snapshot = source_2_snapshot
         bounty.resolved_at = u256(self._now())
-        bounty.challenge_note = ""
 
         if winner_id:
             winner_submission = self.submissions[

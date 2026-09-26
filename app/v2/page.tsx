@@ -453,6 +453,7 @@ export default function ResearchArenaV2Page() {
             <h2>{bounty.question}</h2>
             <p>{bounty.rationale || "No settlement rationale yet."}</p>
             {n(bounty.resolution_round) > 1 && (
+              <>
               <div className={styles.appealDiff}>
                 <div><small>INITIAL WINNER</small><b>{bounty.initial_winner_submission_id || "No winner"}</b></div>
                 <div><small>INITIAL SCORE</small><b>{n(bounty.initial_winning_score)}/100</b></div>
@@ -461,6 +462,8 @@ export default function ResearchArenaV2Page() {
                 <div><small>CURRENT WINNER</small><b>{bounty.winner_submission_id || "No winner"}</b></div>
                 <div><small>CURRENT SCORE</small><b>{n(bounty.winning_score)}/100</b></div>
               </div>
+              {bounty.challenge_note && <p className={styles.challengeHistory}><b>Challenge:</b> {bounty.challenge_note}</p>}
+              </>
             )}
             <div className={styles.metrics}>
               <div><small>Winner</small><b>{bounty.winner_submission_id || "No winner"}</b></div>
