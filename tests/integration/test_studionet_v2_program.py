@@ -185,7 +185,12 @@ def test_researcharena_v2_program_challenge_and_refund(default_account, accounts
     )
     phase1_after = _wait_status(contract, phase_1, {"RESOLVED"})
     assert int(_field(phase1_after, "challenge_count")) == 1
+    assert int(_field(phase1_after, "resolution_round")) == 2
+    assert str(_field(phase1_after, "initial_winner_submission_id")) == f"{phase_1}-primary"
+    assert int(_field(phase1_after, "initial_winning_score")) >= 70
+    assert str(_field(phase1_after, "initial_reason_code"))
     assert str(_field(phase1_after, "winner_submission_id")) == f"{phase_1}-primary"
+    print("RA_V2_AUDITABLE_APPEAL_VERIFIED=true", flush=True)
 
     claim_1 = researcher_a.claim_reward(args=[phase_1]).transact(
         wait_interval=10000, wait_retries=40

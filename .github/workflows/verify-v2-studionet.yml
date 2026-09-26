@@ -26,6 +26,7 @@ jobs:
           grep -q 'RA_V2_DEPLOY_INPUT_MATCH=true' /tmp/v2.log
           grep -q 'RA_V2_PHASE2_LOCKED_BEFORE_PHASE1_PAID=true' /tmp/v2.log
           grep -q 'RA_V2_EVIDENCE_SNAPSHOTS_STORED=true' /tmp/v2.log
+          grep -q 'RA_V2_AUDITABLE_APPEAL_VERIFIED=true' /tmp/v2.log
           grep -q 'RA_V2_PHASE2_UNLOCKED_AFTER_PHASE1_PAID=true' /tmp/v2.log
           grep -q 'RA_V2_TWO_PHASE_PROGRAM_VERIFIED=true' /tmp/v2.log
           grep -q 'RA_V2_RESEARCHER_STATS_VERIFIED=true' /tmp/v2.log
