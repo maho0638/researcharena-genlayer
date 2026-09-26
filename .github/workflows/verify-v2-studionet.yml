@@ -1,0 +1,22 @@
+name: Verify V2 Studionet
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/verify-v2-studionet.yml"
+      - "contracts/research_arena_v2.py"
+      - "tests/integration/test_studionet_v2_program.py"
+  workflow_dispatch:
+
+jobs:
+  v2-live-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Deploy V2 and verify multi-phase, challenge, and refund paths
+        run: gltest tests/integration/test_studionet_v2_program.py -v -s --network studionet
