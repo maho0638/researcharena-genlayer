@@ -36,7 +36,7 @@ export function auditBounty(bounty: Bounty) {
   const status = String(bounty.status ?? "");
   const score = Number(bounty.winning_score ?? 0);
   const settled = ["PAID", "REFUNDED"].includes(status);
-  const resolved = ["RESOLVED", "REJECTED", "CHALLENGED", "PAID", "REFUNDED"].includes(status);
+  const resolutionState = ["RESOLVED", "REJECTED", "CHALLENGED", "PAID"].includes(status);
   const winnerState = ["RESOLVED", "PAID"].includes(status);
   const rejectionState = status === "REJECTED";
   const round = Number(bounty.resolution_round ?? 0);
@@ -48,8 +48,8 @@ export function auditBounty(bounty: Bounty) {
     rejectedHasNoWinner: !rejectionState || !bounty.winner_submission_id,
     paidWasClaimed: status !== "PAID" || bounty.reward_claimed === true,
     refundWasSettled: status !== "REFUNDED" || bounty.reward_claimed === true,
-    resolvedHasReason: !resolved || Boolean(bounty.reason_code),
-    resolutionRoundPresent: !resolved || round >= 1,
+    resolvedHasReason: round === 0 || Boolean(bounty.reason_code),
+    resolutionRoundPresent: !resolutionState || round >= 1,
     challengedRoundAuditable:
       round <= 1 ||
       (

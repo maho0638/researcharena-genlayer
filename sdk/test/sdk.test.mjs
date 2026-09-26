@@ -11,6 +11,7 @@ import {
 test("audit accepts a settled V2 bounty", () => {
   const result = auditBounty({
     status: "PAID",
+    winner_submission_id: "entry-1",
     winning_score: 92,
     reason_code: "RUBRIC_FIT",
     reward_claimed: true,
@@ -90,4 +91,15 @@ test("refund and stalled-recovery request builders map to contract entrypoints",
   const address = "0x1111111111111111111111111111111111111111";
   assert.equal(refundRejectedRequest(address, "bounty").functionName, "refund_rejected");
   assert.equal(recoverStalledRequest(address, "bounty").functionName, "recover_stalled_bounty");
+});
+
+
+test("audit accepts an unfilled refund with no consensus round", () => {
+  const result = auditBounty({
+    status: "REFUNDED",
+    reward_claimed: true,
+    resolution_round: 0,
+    policy_version: RESEARCHARENA_V2_POLICY,
+  });
+  assert.equal(result.ok, true);
 });
