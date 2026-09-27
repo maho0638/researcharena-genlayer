@@ -13,7 +13,7 @@ jobs:
         run: |
           set -euo pipefail
           BASE="https://researcharena-genlayer.vercel.app"
-          EXPECTED_CONTRACT="0xf2dd996300750d880a7db948f41b639e1EA6624A"
+          EXPECTED_CONTRACT="0x069855c30BA2840E3eeD49787e1799BFa2bF7Da9"
           READY=0
 
           for attempt in $(seq 1 60); do
@@ -29,8 +29,11 @@ jobs:
 
           expected = os.environ["EXPECTED_CONTRACT"].lower()
           assert proof["v2"]["canonical_contract"].lower() == expected
-          assert proof["v2"]["workflow_run"] == 36269260931
+          assert proof["v2"]["workflow_run"] == 36349449658
           assert proof["v2"]["source_match"] is True
+          assert proof["policy"] == "RA_V2_1_CHALLENGE_WINDOW"
+          assert proof["v2"]["challenge_window_seconds"] == 3600
+          assert proof["assertions"]["challenge_window_enforced"] is True
           assert proof["assertions"]["all_live_paths_verified"] is True
           assert proof["assertions"]["deployed_source_match"] is True
           assert proof["lifecycle"]["phase_1"]["final_status"] == "PAID"
@@ -49,6 +52,6 @@ jobs:
           done
 
           test "$READY" -eq 1
-          echo "RESEARCHARENA_V2_PRODUCTION_SMOKE=true"
-          echo "RESEARCHARENA_V2_PRODUCTION_CONTRACT=$EXPECTED_CONTRACT"
-          echo "RESEARCHARENA_V2_PRODUCTION_URL=$BASE/v2"
+          echo "RESEARCHARENA_V2_1_PRODUCTION_SMOKE=true"
+          echo "RESEARCHARENA_V2_1_PRODUCTION_CONTRACT=$EXPECTED_CONTRACT"
+          echo "RESEARCHARENA_V2_1_PRODUCTION_URL=$BASE/v2"
