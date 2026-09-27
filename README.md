@@ -46,20 +46,21 @@ V2 adds:
 **Promotion rule:** automatic Vercel deployment is disabled on the V2 development branch. The final contract address and production UI are promoted only after CI, direct tests, lint, SDK tests, frontend build, live economic-path proof and deployed-source equality all pass.
 
 
-### Canonical V2 Studionet proof
+### Canonical V2.1 Studionet proof
 
-- **Contract:** `0xf2dd996300750d880a7db948f41b639e1EA6624A`
-- **Explorer:** https://explorer-studio.genlayer.com/address/0xf2dd996300750d880a7db948f41b639e1EA6624A
-- **Canonical workflow:** https://github.com/maho0638/researcharena-genlayer/actions/runs/36269260931
-- **Predeploy CI:** https://github.com/maho0638/researcharena-genlayer/actions/runs/36268953560
-- **Canonical contract predeploy tests:** 42 passed
-- **Current reviewer branch tests:** 43 passed (adds final proof-manifest consistency)
-- **Normalized deployed/repository source SHA-256:** `a1c3807c5a2fbe31fa1a0a0cca655f5816e735292dab81700f3295ca19396eba`
+- **Contract:** `0x069855c30BA2840E3eeD49787e1799BFa2bF7Da9`
+- **Explorer:** https://explorer-studio.genlayer.com/address/0x069855c30BA2840E3eeD49787e1799BFa2bF7Da9
+- **Canonical workflow:** https://github.com/maho0638/researcharena-genlayer/actions/runs/36349449658
+- **Predeploy CI:** https://github.com/maho0638/researcharena-genlayer/actions/runs/36349452189
+- **Canonical contract predeploy tests:** 49 passed
+- **Policy:** `RA_V2_1_CHALLENGE_WINDOW`
+- **Guaranteed review window:** 1 hour before first claim/refund
+- **Normalized deployed/repository source SHA-256:** `4f097f22405c80c767b62cdf1b3eac24fbd6e4e7ddb49801679118f2d1d563ba`
 - **Source equality:** `RA_V2_DEPLOYED_SOURCE_MATCH=true`
-- **Proof artifact digest:** `sha256:ef01efd3ed619afe669176fe2732f2ead63eae62f62e84f8130084300c938e54`
+- **Proof artifact digest:** `sha256:acb7e90f11071dc6948f16e8419e09b05e7b13628db8fee08decb49ea8b72be6`
 - **Production route after final promotion:** https://researcharena-genlayer.vercel.app/v2
 - **Machine-readable proof after final promotion:** https://researcharena-genlayer.vercel.app/v2-proof.json
-- **Live result:** two ordered phases both resolved and paid; one challenge was re-resolved; an unavailable-evidence market was rejected and refunded.
+- **Live result:** two ordered phases resolved, were challenge-tested and paid; an unavailable-evidence market was rejected, challenge-tested and refunded.
 
 Reviewer docs:
 
@@ -110,9 +111,10 @@ Consensus rationale:
 - bounty creator cannot compete in their own bounty
 - three public HTTPS URLs per entry: report + two evidence sources
 - duplicate submission IDs rejected
-- the two evidence URLs must be distinct and use different hostnames; source authority and real independence remain part of the live evidence judgment
+- the two evidence URLs must be distinct and use different normalized hostnames; query/fragment/trailing-dot tricks and ambiguous userinfo authority forms cannot bypass the contract check
 - webpage content is explicitly treated as untrusted input
 - validators independently recompute the winner and both settlement scores; the leader's structured reason code is schema-validated and stored as explanatory metadata
+- initial RESOLVED/REJECTED outcomes have a one-hour guaranteed challenge window before claim/refund
 - reward claim is restricted to the stored winner
 - claim state is updated before the external transfer
 - unfilled bounties have a creator-only refund path; with one entry, refund requires the deadline to pass
@@ -123,7 +125,7 @@ Consensus rationale:
 
 The repository includes:
 
-- 43 direct/repository consistency tests across the V1 baseline and V2 milestone; 42 of these were already green before the canonical contract deployment, and the 43rd seals the published proof manifest
+- 49 direct/repository consistency tests across the V1 baseline and V2.1 milestone, including settlement-window and evidence-host bypass tests
 - explicit validator-equivalence tests for dynamic web snapshots, winner disagreement, threshold failure and no-winner agreement
 - GenVM lint and validation for both V1 and V2 contracts
 - TypeScript SDK build/tests
