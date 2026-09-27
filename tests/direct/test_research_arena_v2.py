@@ -210,6 +210,49 @@ def test_v2_requires_three_distinct_urls(
         )
 
 
+def test_v2_rejects_same_evidence_host_with_query_or_trailing_dot(
+    direct_vm, direct_deploy, direct_alice, direct_bob
+):
+    contract = direct_deploy("contracts/research_arena_v2.py")
+    create_bounty(direct_vm, contract, direct_alice)
+
+    direct_vm.sender = direct_bob
+    with direct_vm.expect_revert("independent domains"):
+        contract.submit_research(
+            "bounty-v2",
+            "same-host-query",
+            "https://report.example/research",
+            "https://same.example?view=one",
+            "https://same.example/path",
+        )
+
+    with direct_vm.expect_revert("independent domains"):
+        contract.submit_research(
+            "bounty-v2",
+            "same-host-dot",
+            "https://report.example/research-2",
+            "https://same.example./evidence",
+            "https://same.example/other",
+        )
+
+
+def test_v2_rejects_ambiguous_evidence_userinfo_host(
+    direct_vm, direct_deploy, direct_alice, direct_bob
+):
+    contract = direct_deploy("contracts/research_arena_v2.py")
+    create_bounty(direct_vm, contract, direct_alice)
+
+    direct_vm.sender = direct_bob
+    with direct_vm.expect_revert("hostname is invalid"):
+        contract.submit_research(
+            "bounty-v2",
+            "userinfo-host",
+            "https://report.example/research",
+            "https://trusted.example@evil.example/evidence",
+            "https://independent.example/evidence",
+        )
+
+
 def test_v2_resolution_stores_evidence_snapshots(
     direct_vm, direct_deploy, direct_alice, direct_bob, direct_charlie
 ):
