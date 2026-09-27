@@ -225,6 +225,15 @@ def test_researcharena_v2_program_challenge_and_refund(default_account, accounts
     assert str(_field(phase1_result, "winner_source_2_snapshot"))
     print("RA_V2_EVIDENCE_SNAPSHOTS_STORED=true", flush=True)
 
+    challenge_deadline = int(
+        _call_with_retry(contract.get_challenge_deadline(args=[phase_1]))
+    )
+    assert challenge_deadline == int(_field(phase1_result, "resolved_at")) + 3600
+    assert bool(
+        _call_with_retry(contract.is_settlement_ready(args=[phase_1]))
+    ) is False
+    print("RA_V2_CHALLENGE_WINDOW_ENFORCED=true", flush=True)
+
     challenge = _transact_with_nonce_retry(
         researcher_b.challenge_resolution(
             args=[
@@ -257,6 +266,8 @@ def test_researcharena_v2_program_challenge_and_refund(default_account, accounts
     assert int(_field(phase1_after, "initial_winning_score")) >= 70
     assert str(_field(phase1_after, "initial_reason_code"))
     assert str(_field(phase1_after, "winner_submission_id")) == f"{phase_1}-primary"
+    assert int(_call_with_retry(contract.get_challenge_deadline(args=[phase_1]))) == 0
+    assert bool(_call_with_retry(contract.is_settlement_ready(args=[phase_1]))) is True
     print("RA_V2_AUDITABLE_APPEAL_VERIFIED=true", flush=True)
 
     claim_1 = _transact_with_nonce_retry(
@@ -275,6 +286,31 @@ def test_researcharena_v2_program_challenge_and_refund(default_account, accounts
     phase2_result = _resolve(creator, contract, phase_2)
     assert str(_field(phase2_result, "status")) == "RESOLVED"
     assert str(_field(phase2_result, "winner_submission_id")) == f"{phase_2}-primary"
+    assert bool(_call_with_retry(contract.is_settlement_ready(args=[phase_2]))) is False
+
+    challenge_2 = _transact_with_nonce_retry(
+        researcher_b.challenge_resolution(
+            args=[
+                phase_2,
+                "Request the one allowed fresh consensus round before phase-two payout.",
+            ]
+        ),
+        wait_interval=10000,
+        wait_retries=40,
+    )
+    assert tx_execution_succeeded(challenge_2)
+    print(f"RA_V2_PHASE2_CHALLENGE_TX={challenge_2.get('hash', '')}", flush=True)
+
+    resolve_challenge_2 = _transact_with_nonce_retry(
+        creator.resolve_challenge(args=[phase_2]),
+        consensus_max_rotations=5,
+        wait_interval=10000,
+        wait_retries=50,
+    )
+    assert tx_execution_succeeded(resolve_challenge_2)
+    phase2_after = _wait_status(contract, phase_2, {"RESOLVED"})
+    assert str(_field(phase2_after, "winner_submission_id")) == f"{phase_2}-primary"
+    assert bool(_call_with_retry(contract.is_settlement_ready(args=[phase_2]))) is True
 
     claim_2 = _transact_with_nonce_retry(
         researcher_a.claim_reward(args=[phase_2]),
@@ -372,6 +408,31 @@ def test_researcharena_v2_program_challenge_and_refund(default_account, accounts
         "CONTRADICTORY_EVIDENCE",
     }
     print("RA_V2_NO_WINNER_VERIFIED=true", flush=True)
+    assert bool(_call_with_retry(contract.is_settlement_ready(args=[bad_id]))) is False
+
+    challenge_bad = _transact_with_nonce_retry(
+        researcher_a.challenge_resolution(
+            args=[
+                bad_id,
+                "Request one fresh consensus round before the no-winner escrow is refunded.",
+            ]
+        ),
+        wait_interval=10000,
+        wait_retries=40,
+    )
+    assert tx_execution_succeeded(challenge_bad)
+    print(f"RA_V2_BAD_CHALLENGE_TX={challenge_bad.get('hash', '')}", flush=True)
+
+    resolve_bad_challenge = _transact_with_nonce_retry(
+        creator.resolve_challenge(args=[bad_id]),
+        consensus_max_rotations=5,
+        wait_interval=10000,
+        wait_retries=50,
+    )
+    assert tx_execution_succeeded(resolve_bad_challenge)
+    bad_after = _wait_status(contract, bad_id, {"REJECTED"})
+    assert str(_field(bad_after, "winner_submission_id")) == ""
+    assert bool(_call_with_retry(contract.is_settlement_ready(args=[bad_id]))) is True
 
     refund = _transact_with_nonce_retry(
         creator.refund_rejected(args=[bad_id]),

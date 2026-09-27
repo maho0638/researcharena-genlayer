@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import {
   RESEARCHARENA_V2_POLICY,
   auditBounty,
+  challengeDeadline,
+  settlementReady,
   createProgramPhaseRequest,
   refundRejectedRequest,
   recoverStalledRequest,
@@ -102,4 +104,28 @@ test("audit accepts an unfilled refund with no consensus round", () => {
     policy_version: RESEARCHARENA_V2_POLICY,
   });
   assert.equal(result.ok, true);
+});
+
+
+test("challenge window helper locks initial settlement until deadline", () => {
+  const bounty = {
+    status: "RESOLVED",
+    resolved_at: 1000,
+    resolution_round: 1,
+    challenge_count: 0,
+  };
+  assert.equal(challengeDeadline(bounty), 4600);
+  assert.equal(settlementReady(bounty, 4599), false);
+  assert.equal(settlementReady(bounty, 4601), true);
+});
+
+test("fresh challenge round is immediately settlement-ready", () => {
+  const bounty = {
+    status: "RESOLVED",
+    resolved_at: 2000,
+    resolution_round: 2,
+    challenge_count: 1,
+  };
+  assert.equal(challengeDeadline(bounty), 0);
+  assert.equal(settlementReady(bounty, 2001), true);
 });

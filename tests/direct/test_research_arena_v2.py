@@ -10,6 +10,15 @@ def future_deadline(seconds=7200):
     return int((datetime.now(timezone.utc) + timedelta(seconds=seconds)).timestamp())
 
 
+def warp_past_challenge_window(direct_vm, bounty):
+    direct_vm.warp(
+        datetime.fromtimestamp(
+            int(bounty.resolved_at) + 3601,
+            timezone.utc,
+        ).isoformat()
+    )
+
+
 def create_bounty(direct_vm, contract, creator, bounty_id="bounty-v2", reward=1000):
     direct_vm.sender = creator
     direct_vm.value = reward
@@ -201,6 +210,49 @@ def test_v2_requires_three_distinct_urls(
         )
 
 
+def test_v2_rejects_same_evidence_host_with_query_or_trailing_dot(
+    direct_vm, direct_deploy, direct_alice, direct_bob
+):
+    contract = direct_deploy("contracts/research_arena_v2.py")
+    create_bounty(direct_vm, contract, direct_alice)
+
+    direct_vm.sender = direct_bob
+    with direct_vm.expect_revert("independent domains"):
+        contract.submit_research(
+            "bounty-v2",
+            "same-host-query",
+            "https://report.example/research",
+            "https://same.example?view=one",
+            "https://same.example/path",
+        )
+
+    with direct_vm.expect_revert("independent domains"):
+        contract.submit_research(
+            "bounty-v2",
+            "same-host-dot",
+            "https://report.example/research-2",
+            "https://same.example./evidence",
+            "https://same.example/other",
+        )
+
+
+def test_v2_rejects_ambiguous_evidence_userinfo_host(
+    direct_vm, direct_deploy, direct_alice, direct_bob
+):
+    contract = direct_deploy("contracts/research_arena_v2.py")
+    create_bounty(direct_vm, contract, direct_alice)
+
+    direct_vm.sender = direct_bob
+    with direct_vm.expect_revert("hostname is invalid"):
+        contract.submit_research(
+            "bounty-v2",
+            "userinfo-host",
+            "https://report.example/research",
+            "https://trusted.example@evil.example/evidence",
+            "https://independent.example/evidence",
+        )
+
+
 def test_v2_resolution_stores_evidence_snapshots(
     direct_vm, direct_deploy, direct_alice, direct_bob, direct_charlie
 ):
@@ -224,7 +276,7 @@ def test_v2_resolution_stores_evidence_snapshots(
     assert "Primary report" in bounty.winner_report_snapshot
     assert "Authoritative source" in bounty.winner_source_1_snapshot
     assert "Independent source" in bounty.winner_source_2_snapshot
-    assert bounty.policy_version == "RA_V2_RESEARCH_PROGRAMS"
+    assert bounty.policy_version == "RA_V2_1_CHALLENGE_WINDOW"
 
 
 def test_v2_below_threshold_produces_no_winner_and_refund(
@@ -246,6 +298,10 @@ def test_v2_below_threshold_produces_no_winner_and_refund(
     assert bounty.reason_code == "EVIDENCE_GAP"
 
     direct_vm.deal(direct_vm._contract_address, 1700)
+    with direct_vm.expect_revert("Challenge window is still open"):
+        contract.refund_rejected("bounty-v2")
+    warp_past_challenge_window(direct_vm, bounty)
+    assert contract.is_settlement_ready("bounty-v2") is True
     refunded = contract.refund_rejected("bounty-v2")
     assert refunded == 1700
     assert contract.get_bounty("bounty-v2").status == "REFUNDED"
@@ -267,6 +323,79 @@ def test_v2_unavailable_winner_evidence_fails_closed(
     bounty = contract.get_bounty("bounty-v2")
     assert bounty.status == "REJECTED"
     assert bounty.reason_code == "SOURCE_UNAVAILABLE"
+
+
+def test_v2_initial_resolution_has_guaranteed_challenge_window(
+    direct_vm, direct_deploy, direct_alice, direct_bob, direct_charlie
+):
+    contract = direct_deploy("contracts/research_arena_v2.py")
+    create_bounty(direct_vm, contract, direct_alice, reward=2100)
+    add_two_submissions(direct_vm, contract, direct_bob, direct_charlie)
+    resolve_primary(direct_vm, contract, direct_alice)
+
+    bounty = contract.get_bounty("bounty-v2")
+    deadline = contract.get_challenge_deadline("bounty-v2")
+    assert int(deadline) == int(bounty.resolved_at) + 3600
+    assert contract.is_settlement_ready("bounty-v2") is False
+
+    direct_vm.deal(direct_vm._contract_address, 2100)
+    direct_vm.sender = direct_bob
+    with direct_vm.expect_revert("Challenge window is still open"):
+        contract.claim_reward("bounty-v2")
+
+
+def test_v2_challenge_closes_after_window_and_settlement_opens(
+    direct_vm, direct_deploy, direct_alice, direct_bob, direct_charlie
+):
+    contract = direct_deploy("contracts/research_arena_v2.py")
+    create_bounty(direct_vm, contract, direct_alice, reward=2200)
+    add_two_submissions(direct_vm, contract, direct_bob, direct_charlie)
+    resolve_primary(direct_vm, contract, direct_alice)
+
+    bounty = contract.get_bounty("bounty-v2")
+    warp_past_challenge_window(direct_vm, bounty)
+    assert contract.is_settlement_ready("bounty-v2") is True
+
+    direct_vm.sender = direct_charlie
+    with direct_vm.expect_revert("Challenge window has closed"):
+        contract.challenge_resolution(
+            "bounty-v2",
+            "This challenge arrived after the guaranteed review period expired.",
+        )
+
+    direct_vm.deal(direct_vm._contract_address, 2200)
+    direct_vm.sender = direct_bob
+    claimed = contract.claim_reward("bounty-v2")
+    assert claimed == 2200
+    assert contract.get_bounty("bounty-v2").status == "PAID"
+
+
+def test_v2_reresolution_can_settle_immediately_after_one_fresh_consensus(
+    direct_vm, direct_deploy, direct_alice, direct_bob, direct_charlie
+):
+    contract = direct_deploy("contracts/research_arena_v2.py")
+    create_bounty(direct_vm, contract, direct_alice, reward=2300)
+    add_two_submissions(direct_vm, contract, direct_bob, direct_charlie)
+    resolve_primary(direct_vm, contract, direct_alice)
+
+    direct_vm.sender = direct_charlie
+    contract.challenge_resolution(
+        "bounty-v2",
+        "Run the one allowed fresh consensus round before economic settlement.",
+    )
+    mock_available_evidence(direct_vm)
+    mock_winner(direct_vm)
+    direct_vm.sender = direct_alice
+    contract.resolve_challenge("bounty-v2")
+
+    assert contract.get_challenge_deadline("bounty-v2") == 0
+    assert contract.is_settlement_ready("bounty-v2") is True
+
+    direct_vm.deal(direct_vm._contract_address, 2300)
+    direct_vm.sender = direct_bob
+    claimed = contract.claim_reward("bounty-v2")
+    assert claimed == 2300
+    assert contract.get_bounty("bounty-v2").status == "PAID"
 
 
 def test_v2_participant_can_challenge_and_claim_is_blocked(
@@ -343,6 +472,10 @@ def test_v2_claim_updates_researcher_stats(
 
     direct_vm.deal(direct_vm._contract_address, 2400)
     direct_vm.sender = direct_bob
+    bounty = contract.get_bounty("bounty-v2")
+    with direct_vm.expect_revert("Challenge window is still open"):
+        contract.claim_reward("bounty-v2")
+    warp_past_challenge_window(direct_vm, bounty)
     claimed = contract.claim_reward("bounty-v2")
     assert claimed == 2400
     assert contract.get_bounty("bounty-v2").status == "PAID"
@@ -389,6 +522,10 @@ def test_v2_program_progress_aggregates_settlement(
     )
     direct_vm.deal(direct_vm._contract_address, 2400)
     direct_vm.sender = direct_bob
+    warp_past_challenge_window(
+        direct_vm,
+        contract.get_bounty("phase-one"),
+    )
     contract.claim_reward("phase-one")
 
     progress = contract.get_program_progress("program-progress")
@@ -525,6 +662,10 @@ def test_v2_settled_bounty_cannot_be_challenged(
 
     direct_vm.deal(direct_vm._contract_address, 2000)
     direct_vm.sender = direct_bob
+    warp_past_challenge_window(
+        direct_vm,
+        contract.get_bounty("bounty-v2"),
+    )
     contract.claim_reward("bounty-v2")
 
     direct_vm.sender = direct_charlie

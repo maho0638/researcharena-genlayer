@@ -7,6 +7,7 @@ from genlayer import *
 MAX_SUBMISSIONS = 5
 MAX_PROGRAM_PHASES = 8
 MAX_CHALLENGES = 1
+CHALLENGE_WINDOW_SECONDS = 60 * 60
 MIN_WINNER_SCORE = 70
 MAX_DEADLINE_SECONDS = 365 * 24 * 60 * 60
 RESOLUTION_GRACE_SECONDS = 24 * 60 * 60
@@ -148,9 +149,33 @@ class ResearchArenaV2(gl.Contract):
         return program_id + ":" + str(index)
 
     def _hostname(self, url: str) -> str:
-        host = url[len("https://"):].split("/", 1)[0].split(":", 1)[0].lower()
+        rest = url[len("https://"):]
+        authority = rest
+        for separator in ("/", "?", "#"):
+            authority = authority.split(separator, 1)[0]
+
+        # User-info and backslash forms are intentionally rejected. They are
+        # parsed inconsistently across URL consumers and could otherwise make
+        # the same effective host look distinct to this contract.
+        if not authority or "@" in authority or "\\" in authority:
+            return ""
+
+        if authority.startswith("["):
+            closing = authority.find("]")
+            if closing <= 1:
+                return ""
+            host = authority[1:closing].lower()
+            suffix = authority[closing + 1:]
+            if suffix and not suffix.startswith(":"):
+                return ""
+        else:
+            host = authority.split(":", 1)[0].lower()
+
+        host = host.rstrip(".")
         if host.startswith("www."):
             host = host[4:]
+        if not host or any(ch.isspace() for ch in host):
+            return ""
         return host
 
     def _snapshot(self, value: str) -> str:
@@ -176,6 +201,19 @@ class ResearchArenaV2(gl.Contract):
             return True
         previous = self.bounties[bounty.prerequisite_bounty_id]
         return previous.status == "PAID"
+
+    def _challenge_deadline(self, bounty: Bounty) -> int:
+        if int(bounty.resolution_round) != 1 or int(bounty.challenge_count) != 0:
+            return 0
+        if bounty.status not in ("RESOLVED", "REJECTED"):
+            return 0
+        return int(bounty.resolved_at) + CHALLENGE_WINDOW_SECONDS
+
+    def _settlement_ready(self, bounty: Bounty) -> bool:
+        if bounty.status not in ("RESOLVED", "REJECTED"):
+            return False
+        deadline = self._challenge_deadline(bounty)
+        return deadline == 0 or self._now() > deadline
 
     def _create_bounty(
         self,
@@ -284,7 +322,7 @@ class ResearchArenaV2(gl.Contract):
             resolved_at=u256(0),
             challenged_at=u256(0),
             settled_at=u256(0),
-            policy_version="RA_V2_RESEARCH_PROGRAMS",
+            policy_version="RA_V2_1_CHALLENGE_WINDOW",
         )
 
     @gl.public.write.payable
@@ -326,6 +364,18 @@ class ResearchArenaV2(gl.Contract):
         if bounty_id not in self.bounties:
             raise gl.vm.UserError("Bounty not found")
         return self._phase_unlocked(self.bounties[bounty_id])
+
+    @gl.public.view
+    def get_challenge_deadline(self, bounty_id: str) -> u256:
+        if bounty_id not in self.bounties:
+            raise gl.vm.UserError("Bounty not found")
+        return u256(self._challenge_deadline(self.bounties[bounty_id]))
+
+    @gl.public.view
+    def is_settlement_ready(self, bounty_id: str) -> bool:
+        if bounty_id not in self.bounties:
+            raise gl.vm.UserError("Bounty not found")
+        return self._settlement_ready(self.bounties[bounty_id])
 
     @gl.public.write
     def submit_research(
@@ -369,7 +419,12 @@ class ResearchArenaV2(gl.Contract):
 
         if report_url in (source_url_1, source_url_2) or source_url_1 == source_url_2:
             raise gl.vm.UserError("Report and evidence URLs must be distinct")
-        if self._hostname(source_url_1) == self._hostname(source_url_2):
+
+        source_host_1 = self._hostname(source_url_1)
+        source_host_2 = self._hostname(source_url_2)
+        if not source_host_1 or not source_host_2:
+            raise gl.vm.UserError("Evidence source hostname is invalid")
+        if source_host_1 == source_host_2:
             raise gl.vm.UserError("Evidence sources must use independent domains")
 
         key = self._submission_key(bounty_id, submission_id)
@@ -734,6 +789,9 @@ Return JSON only:
             raise gl.vm.UserError("Settled bounty cannot be challenged")
         if int(bounty.challenge_count) >= MAX_CHALLENGES:
             raise gl.vm.UserError("Maximum challenge count reached")
+        deadline = self._challenge_deadline(bounty)
+        if deadline <= 0 or self._now() > deadline:
+            raise gl.vm.UserError("Challenge window has closed")
 
         sender = gl.message.sender_address
         participant = (
@@ -780,6 +838,8 @@ Return JSON only:
             raise gl.vm.UserError("Only the winning researcher can claim")
         if bounty.reward_claimed:
             raise gl.vm.UserError("Reward already claimed")
+        if not self._settlement_ready(bounty):
+            raise gl.vm.UserError("Challenge window is still open")
         if self.balance < bounty.reward:
             raise gl.vm.UserError("Contract balance is insufficient")
 
@@ -837,6 +897,8 @@ Return JSON only:
             raise gl.vm.UserError("Only the bounty creator can refund")
         if bounty.status != "REJECTED":
             raise gl.vm.UserError("Bounty is not rejected")
+        if not self._settlement_ready(bounty):
+            raise gl.vm.UserError("Challenge window is still open")
         return self._refund(bounty)
 
     @gl.public.write
