@@ -7,6 +7,7 @@ from genlayer import *
 MAX_SUBMISSIONS = 5
 MAX_PROGRAM_PHASES = 8
 MAX_CHALLENGES = 1
+CHALLENGE_WINDOW_SECONDS = 60 * 60
 MIN_WINNER_SCORE = 70
 MAX_DEADLINE_SECONDS = 365 * 24 * 60 * 60
 RESOLUTION_GRACE_SECONDS = 24 * 60 * 60
@@ -177,6 +178,19 @@ class ResearchArenaV2(gl.Contract):
         previous = self.bounties[bounty.prerequisite_bounty_id]
         return previous.status == "PAID"
 
+    def _challenge_deadline(self, bounty: Bounty) -> int:
+        if int(bounty.resolution_round) != 1 or int(bounty.challenge_count) != 0:
+            return 0
+        if bounty.status not in ("RESOLVED", "REJECTED"):
+            return 0
+        return int(bounty.resolved_at) + CHALLENGE_WINDOW_SECONDS
+
+    def _settlement_ready(self, bounty: Bounty) -> bool:
+        if bounty.status not in ("RESOLVED", "REJECTED"):
+            return False
+        deadline = self._challenge_deadline(bounty)
+        return deadline == 0 or self._now() > deadline
+
     def _create_bounty(
         self,
         program_id: str,
@@ -284,7 +298,7 @@ class ResearchArenaV2(gl.Contract):
             resolved_at=u256(0),
             challenged_at=u256(0),
             settled_at=u256(0),
-            policy_version="RA_V2_RESEARCH_PROGRAMS",
+            policy_version="RA_V2_1_CHALLENGE_WINDOW",
         )
 
     @gl.public.write.payable
@@ -326,6 +340,18 @@ class ResearchArenaV2(gl.Contract):
         if bounty_id not in self.bounties:
             raise gl.vm.UserError("Bounty not found")
         return self._phase_unlocked(self.bounties[bounty_id])
+
+    @gl.public.view
+    def get_challenge_deadline(self, bounty_id: str) -> u256:
+        if bounty_id not in self.bounties:
+            raise gl.vm.UserError("Bounty not found")
+        return u256(self._challenge_deadline(self.bounties[bounty_id]))
+
+    @gl.public.view
+    def is_settlement_ready(self, bounty_id: str) -> bool:
+        if bounty_id not in self.bounties:
+            raise gl.vm.UserError("Bounty not found")
+        return self._settlement_ready(self.bounties[bounty_id])
 
     @gl.public.write
     def submit_research(
@@ -734,6 +760,9 @@ Return JSON only:
             raise gl.vm.UserError("Settled bounty cannot be challenged")
         if int(bounty.challenge_count) >= MAX_CHALLENGES:
             raise gl.vm.UserError("Maximum challenge count reached")
+        deadline = self._challenge_deadline(bounty)
+        if deadline <= 0 or self._now() > deadline:
+            raise gl.vm.UserError("Challenge window has closed")
 
         sender = gl.message.sender_address
         participant = (
@@ -780,6 +809,8 @@ Return JSON only:
             raise gl.vm.UserError("Only the winning researcher can claim")
         if bounty.reward_claimed:
             raise gl.vm.UserError("Reward already claimed")
+        if not self._settlement_ready(bounty):
+            raise gl.vm.UserError("Challenge window is still open")
         if self.balance < bounty.reward:
             raise gl.vm.UserError("Contract balance is insufficient")
 
@@ -837,6 +868,8 @@ Return JSON only:
             raise gl.vm.UserError("Only the bounty creator can refund")
         if bounty.status != "REJECTED":
             raise gl.vm.UserError("Bounty is not rejected")
+        if not self._settlement_ready(bounty):
+            raise gl.vm.UserError("Challenge window is still open")
         return self._refund(bounty)
 
     @gl.public.write
