@@ -61,12 +61,15 @@ type ResearcherStats = {
   total_earned?: string | number | bigint;
 };
 
-const CANONICAL_V2_ADDRESS = "0xf2dd996300750d880a7db948f41b639e1EA6624A";
+const CANONICAL_V2_ADDRESS = "0x069855c30BA2840E3eeD49787e1799BFa2bF7Da9";
 const CANONICAL_PROGRAM = "researcharena-v2-program";
 const CANONICAL_PHASE = "ra-v2-evidence-phase";
-const CANONICAL_WORKFLOW = "https://github.com/maho0638/researcharena-genlayer/actions/runs/36269260931";
+const CANONICAL_WORKFLOW = "https://github.com/maho0638/researcharena-genlayer/actions/runs/36349449658";
+const ENV_V2_ADDRESS = process.env.NEXT_PUBLIC_RESEARCHARENA_V2_ADDRESS;
 const RAW_V2_ADDRESS =
-  process.env.NEXT_PUBLIC_RESEARCHARENA_V2_ADDRESS || CANONICAL_V2_ADDRESS;
+  process.env.NODE_ENV === "production"
+    ? CANONICAL_V2_ADDRESS
+    : (ENV_V2_ADDRESS || CANONICAL_V2_ADDRESS);
 const V2_CONFIGURED = /^0x[a-fA-F0-9]{40}$/.test(RAW_V2_ADDRESS);
 const POLICY = "RA_V2_1_CHALLENGE_WINDOW";
 const explorerBase = "https://explorer-studio.genlayer.com";
@@ -405,7 +408,7 @@ export default function ResearchArenaV2Page() {
         <a href="/" className={styles.brand}>ResearchArena</a>
         <div className={styles.headerRight}>
           <span className={V2_CONFIGURED ? styles.live : styles.pending}>
-            {V2_CONFIGURED ? "V2 LIVE · SOURCE VERIFIED" : "PRE-DEPLOY VERIFICATION"}
+            {V2_CONFIGURED ? "V2.1 LIVE · SOURCE VERIFIED" : "PRE-DEPLOY VERIFICATION"}
           </span>
           <a className={styles.proofLink} href={CANONICAL_WORKFLOW} target="_blank" rel="noreferrer">
             Canonical proof ↗
@@ -418,7 +421,7 @@ export default function ResearchArenaV2Page() {
 
       <section className={styles.hero}>
         <p className={styles.eyebrow}>RESEARCH PROGRAMS · EVIDENCE-BOUND CONSENSUS · NATIVE GEN</p>
-        <h1>ResearchArena <em>V2</em></h1>
+        <h1>ResearchArena <em>V2.1</em></h1>
         <p className={styles.lead}>
           Chain research phases together, lock GEN per phase, settle only evidence-backed winners,
           guarantee a review window before first settlement, challenge once, and expose objective researcher settlement history for other agents and apps.
@@ -610,7 +613,7 @@ export default function ResearchArenaV2Page() {
       </section>
 
       <footer className={styles.footer}>
-        <span>ResearchArena V2 · GenLayer Studionet</span>
+        <span>ResearchArena V2.1 · GenLayer Studionet</span>
         <span>Deployment is the final promotion gate — never the development loop.</span>
       </footer>
     </main>
