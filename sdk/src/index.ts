@@ -2,8 +2,9 @@ import { createClient } from "genlayer-js";
 import { studionet } from "genlayer-js/chains";
 
 export type ContractAddress = string;
-export const RESEARCHARENA_V2_POLICY = "RA_V2_RESEARCH_PROGRAMS";
+export const RESEARCHARENA_V2_POLICY = "RA_V2_1_CHALLENGE_WINDOW";
 export const MIN_WINNER_SCORE = 70;
+export const CHALLENGE_WINDOW_SECONDS = 60 * 60;
 
 export type Bounty = {
   id?: string;
@@ -18,6 +19,7 @@ export type Bounty = {
   challenge_count?: bigint | number | string;
   challenge_note?: string;
   resolution_round?: bigint | number | string;
+  resolved_at?: bigint | number | string;
   initial_recorded?: boolean;
   initial_winner_submission_id?: string;
   initial_winning_score?: bigint | number | string;
@@ -31,6 +33,26 @@ export type Bounty = {
 
 export type ProgramProgress = Record<string, bigint | number | string | undefined>;
 export type ResearcherStats = Record<string, bigint | number | string | undefined>;
+
+export function challengeDeadline(bounty: Bounty): number {
+  const status = String(bounty.status ?? "");
+  const round = Number(bounty.resolution_round ?? 0);
+  const challenges = Number(bounty.challenge_count ?? 0);
+  const resolvedAt = Number(bounty.resolved_at ?? 0);
+  if (!["RESOLVED", "REJECTED"].includes(status) || round !== 1 || challenges !== 0 || resolvedAt <= 0) {
+    return 0;
+  }
+  return resolvedAt + CHALLENGE_WINDOW_SECONDS;
+}
+
+export function settlementReady(
+  bounty: Bounty,
+  nowSeconds = Math.floor(Date.now() / 1000),
+): boolean {
+  if (!["RESOLVED", "REJECTED"].includes(String(bounty.status ?? ""))) return false;
+  const deadline = challengeDeadline(bounty);
+  return deadline === 0 || nowSeconds > deadline;
+}
 
 export function auditBounty(bounty: Bounty) {
   const status = String(bounty.status ?? "");
@@ -95,6 +117,22 @@ export class ResearchArenaClient {
       address: this.address,
       functionName: "get_researcher_stats",
       args: [address],
+    });
+  }
+
+  getChallengeDeadline(bountyId: string): Promise<bigint | number | string> {
+    return this.client.readContract({
+      address: this.address,
+      functionName: "get_challenge_deadline",
+      args: [bountyId],
+    });
+  }
+
+  isSettlementReady(bountyId: string): Promise<boolean> {
+    return this.client.readContract({
+      address: this.address,
+      functionName: "is_settlement_ready",
+      args: [bountyId],
     });
   }
 
