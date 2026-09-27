@@ -1,6 +1,6 @@
 # ResearchArena V2.1 — Guaranteed Challenge Window
 
-Status: development only — **not deployed**.
+Status: **verified canonical V2.1 candidate on Studionet**; production UI promotion is the remaining gate.
 
 ## Why this hardening exists
 
@@ -54,4 +54,4 @@ This branch must not be promoted or deployed until all of the following pass:
 7. reviewer proof update;
 8. only then a controlled production promotion.
 
-The existing canonical V2 contract and proof manifest remain historical evidence and are intentionally not rewritten to claim V2.1 behavior.
+The previous V2 contract remains historical evidence. The V2.1 proof manifest now points to the source-matched Studionet contract `0x069855c30BA2840E3eeD49787e1799BFa2bF7Da9` and workflow `36349449658`.
