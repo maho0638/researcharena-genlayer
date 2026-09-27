@@ -24,11 +24,17 @@ If nobody challenges, settlement becomes available after the window expires.
 
 If an authorized party challenges, the contract runs the existing fresh consensus round. After that one allowed re-resolution, settlement can proceed immediately because the challenge right has been consumed and the result already received a second consensus pass.
 
+## Evidence-host normalization hardening
+
+V2.1 also closes an evidence-independence bypass in the contract-level URL parser. Query strings, fragments, trailing-dot hostnames, and ambiguous `userinfo@host` authority forms can no longer make the same effective evidence host appear independent.
+
+The frontend already uses the browser URL parser, but the contract is the security boundary and now performs its own deterministic normalization and rejects ambiguous authority forms.
+
 ## Cross-layer support
 
 The V2.1 branch updates:
 
-- Intelligent Contract settlement guards;
+- Intelligent Contract settlement guards and evidence-host normalization;
 - direct tests with `direct_vm.warp()` for challenge expiry;
 - live Studionet integration test logic;
 - SDK helpers for challenge deadline and settlement readiness;
