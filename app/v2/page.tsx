@@ -28,6 +28,7 @@ type BountyView = {
   initial_runner_up_score?: string | number | bigint;
   initial_reason_code?: string;
   resolution_round?: string | number | bigint;
+  resolved_at?: string | number | bigint;
   winner_report_snapshot?: string;
   winner_source_1_snapshot?: string;
   winner_source_2_snapshot?: string;
@@ -67,7 +68,7 @@ const CANONICAL_WORKFLOW = "https://github.com/maho0638/researcharena-genlayer/a
 const RAW_V2_ADDRESS =
   process.env.NEXT_PUBLIC_RESEARCHARENA_V2_ADDRESS || CANONICAL_V2_ADDRESS;
 const V2_CONFIGURED = /^0x[a-fA-F0-9]{40}$/.test(RAW_V2_ADDRESS);
-const POLICY = "RA_V2_RESEARCH_PROGRAMS";
+const POLICY = "RA_V2_1_CHALLENGE_WINDOW";
 const explorerBase = "https://explorer-studio.genlayer.com";
 
 function contractAddress() {
@@ -97,6 +98,11 @@ function isHttps(value: string) {
   } catch {
     return false;
   }
+}
+
+function challengeDeadlineLabel(value: number) {
+  if (!value) return "not active";
+  return new Date(value * 1000).toLocaleString();
 }
 
 export default function ResearchArenaV2Page() {
@@ -129,6 +135,8 @@ export default function ResearchArenaV2Page() {
   const [inspectId, setInspectId] = useState(CANONICAL_PHASE);
   const [bounty, setBounty] = useState<BountyView | null>(null);
   const [submissions, setSubmissions] = useState<any[]>([]);
+  const [challengeDeadlineTs, setChallengeDeadlineTs] = useState(0);
+  const [settlementReady, setSettlementReady] = useState(true);
   const [challengeNote, setChallengeNote] = useState(
     "Please refetch the public evidence and run one fresh consensus pass before settlement."
   );
@@ -298,10 +306,35 @@ export default function ResearchArenaV2Page() {
         );
       }
       setSubmissions(loaded);
+
+      if (data.policy_version === POLICY) {
+        const [deadlineRaw, readyRaw] = await Promise.all([
+          client.readContract({
+            address,
+            functionName: "get_challenge_deadline",
+            args: [id],
+          }),
+          client.readContract({
+            address,
+            functionName: "is_settlement_ready",
+            args: [id],
+          }),
+        ]);
+        setChallengeDeadlineTs(n(deadlineRaw));
+        setSettlementReady(Boolean(readyRaw));
+      } else {
+        // Keep the already deployed V2 benchmark readable while V2.1 remains
+        // a development-only branch. Legacy V2 did not expose these views.
+        setChallengeDeadlineTs(0);
+        setSettlementReady(true);
+      }
+
       setStatus("Bounty loaded from Studionet");
     } catch (error: any) {
       setBounty(null);
       setSubmissions([]);
+      setChallengeDeadlineTs(0);
+      setSettlementReady(true);
       setStatus(error?.message || "Bounty read failed");
     }
   }
@@ -388,11 +421,11 @@ export default function ResearchArenaV2Page() {
         <h1>ResearchArena <em>V2</em></h1>
         <p className={styles.lead}>
           Chain research phases together, lock GEN per phase, settle only evidence-backed winners,
-          challenge once before payout, and expose objective researcher settlement history for other agents and apps.
+          guarantee a review window before first settlement, challenge once, and expose objective researcher settlement history for other agents and apps.
         </p>
         <div className={styles.chips}>
           <span>Policy {POLICY}</span><span>Winner threshold 70/100</span><span>Max 8 phases</span>
-          <span>1 challenge</span><span>24h stalled recovery</span><span>Canonical Studionet proof ✓</span>
+          <span>1 challenge</span><span>1h guaranteed challenge window</span><span>24h stalled recovery</span><span>Canonical Studionet proof ✓</span>
         </div>
         {!V2_CONFIGURED && (
           <div className={styles.guard}>
@@ -448,12 +481,27 @@ export default function ResearchArenaV2Page() {
           <button onClick={() => action("close_bounty", "Bounty closed")} disabled={busy || !V2_CONFIGURED}>Close</button>
           <button onClick={() => action("resolve_bounty", "Consensus resolution finalized")} disabled={busy || !V2_CONFIGURED}>Resolve</button>
           <button onClick={() => action("resolve_challenge", "Challenge re-resolved")} disabled={busy || !V2_CONFIGURED}>Re-resolve</button>
-          <button onClick={() => action("claim_reward", "Winner reward claimed")} disabled={busy || !V2_CONFIGURED}>Claim</button>
-          <button onClick={() => action("refund_rejected", "Rejected bounty refunded")} disabled={busy || !V2_CONFIGURED}>Refund</button>
+          <button
+            onClick={() => action("claim_reward", "Winner reward claimed")}
+            disabled={busy || !V2_CONFIGURED || Boolean(bounty && bounty.policy_version === POLICY && !settlementReady)}
+          >
+            Claim
+          </button>
+          <button
+            onClick={() => action("refund_rejected", "Rejected bounty refunded")}
+            disabled={busy || !V2_CONFIGURED || Boolean(bounty && bounty.policy_version === POLICY && !settlementReady)}
+          >
+            Refund
+          </button>
         </div>
         <div className={styles.challenge}>
           <input value={challengeNote} onChange={(e) => setChallengeNote(e.target.value)} />
-          <button onClick={challenge} disabled={busy || !V2_CONFIGURED}>Challenge once</button>
+          <button
+            onClick={challenge}
+            disabled={busy || !V2_CONFIGURED || Boolean(bounty && bounty.policy_version === POLICY && challengeDeadlineTs === 0)}
+          >
+            Challenge once
+          </button>
         </div>
 
         {bounty && (
@@ -486,6 +534,14 @@ export default function ResearchArenaV2Page() {
               <div><small>Reason</small><b>{bounty.reason_code || "—"}</b></div>
               <div><small>Entries</small><b>{n(bounty.submission_count)}/{n(bounty.max_submissions)}</b></div>
               <div><small>Challenges</small><b>{n(bounty.challenge_count)}/1</b></div>
+              <div>
+                <small>Settlement</small>
+                <b>{bounty.policy_version === POLICY ? (settlementReady ? "ready" : "locked for review") : "legacy V2"}</b>
+              </div>
+              <div>
+                <small>Challenge deadline</small>
+                <b>{bounty.policy_version === POLICY ? challengeDeadlineLabel(challengeDeadlineTs) : "legacy V2"}</b>
+              </div>
             </div>
             <div className={styles.snapshots}>
               <article><small>WINNER REPORT SNAPSHOT</small><p>{bounty.winner_report_snapshot || "—"}</p></article>
