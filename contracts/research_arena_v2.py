@@ -149,9 +149,33 @@ class ResearchArenaV2(gl.Contract):
         return program_id + ":" + str(index)
 
     def _hostname(self, url: str) -> str:
-        host = url[len("https://"):].split("/", 1)[0].split(":", 1)[0].lower()
+        rest = url[len("https://"):]
+        authority = rest
+        for separator in ("/", "?", "#"):
+            authority = authority.split(separator, 1)[0]
+
+        # User-info and backslash forms are intentionally rejected. They are
+        # parsed inconsistently across URL consumers and could otherwise make
+        # the same effective host look distinct to this contract.
+        if not authority or "@" in authority or "\\" in authority:
+            return ""
+
+        if authority.startswith("["):
+            closing = authority.find("]")
+            if closing <= 1:
+                return ""
+            host = authority[1:closing].lower()
+            suffix = authority[closing + 1:]
+            if suffix and not suffix.startswith(":"):
+                return ""
+        else:
+            host = authority.split(":", 1)[0].lower()
+
+        host = host.rstrip(".")
         if host.startswith("www."):
             host = host[4:]
+        if not host or any(ch.isspace() for ch in host):
+            return ""
         return host
 
     def _snapshot(self, value: str) -> str:
@@ -395,7 +419,12 @@ class ResearchArenaV2(gl.Contract):
 
         if report_url in (source_url_1, source_url_2) or source_url_1 == source_url_2:
             raise gl.vm.UserError("Report and evidence URLs must be distinct")
-        if self._hostname(source_url_1) == self._hostname(source_url_2):
+
+        source_host_1 = self._hostname(source_url_1)
+        source_host_2 = self._hostname(source_url_2)
+        if not source_host_1 or not source_host_2:
+            raise gl.vm.UserError("Evidence source hostname is invalid")
+        if source_host_1 == source_host_2:
             raise gl.vm.UserError("Evidence sources must use independent domains")
 
         key = self._submission_key(bounty_id, submission_id)
