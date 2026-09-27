@@ -36,6 +36,7 @@ def test_live_v2_workflow_requires_all_critical_markers():
         "RA_V2_DEPLOY_INPUT_MATCH=true",
         "RA_V2_PHASE2_LOCKED_BEFORE_PHASE1_PAID=true",
         "RA_V2_EVIDENCE_SNAPSHOTS_STORED=true",
+        "RA_V2_CHALLENGE_WINDOW_ENFORCED=true",
         "RA_V2_AUDITABLE_APPEAL_VERIFIED=true",
         "RA_V2_PHASE2_UNLOCKED_AFTER_PHASE1_PAID=true",
         "RA_V2_TWO_PHASE_PROGRAM_VERIFIED=true",
@@ -89,3 +90,17 @@ def test_v2_live_test_proves_auditable_challenge_round():
     assert 'initial_winner_submission_id' in integration
     assert 'resolution_round' in integration
     assert 'RA_V2_AUDITABLE_APPEAL_VERIFIED=true' in integration
+
+
+def test_v2_1_challenge_window_is_consistent_across_contract_sdk_and_frontend():
+    contract = read("contracts/research_arena_v2.py")
+    sdk = read("sdk/src/index.ts")
+    page = read("app/v2/page.tsx")
+    assert 'CHALLENGE_WINDOW_SECONDS = 60 * 60' in contract
+    assert 'RA_V2_1_CHALLENGE_WINDOW' in contract
+    assert 'RA_V2_1_CHALLENGE_WINDOW' in sdk
+    assert 'RA_V2_1_CHALLENGE_WINDOW' in page
+    assert 'get_challenge_deadline' in contract
+    assert 'is_settlement_ready' in contract
+    assert 'get_challenge_deadline' in page
+    assert 'is_settlement_ready' in page
